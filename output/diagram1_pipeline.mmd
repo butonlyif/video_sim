@@ -1,0 +1,20 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#3B82F6', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#2563EB', 'lineColor': '#6B7280', 'secondaryColor': '#F59E0B', 'tertiaryColor': '#ECFDF5', 'tertiaryTextColor': '#065F46', 'tertiaryBorderColor': '#10B981' }}}%%
+flowchart LR
+    A["📷 输入图像/视频"] -->|Python| B["gen_stimulus.py<br/>生成激励数据"]
+    B --> C["stimulus.hex<br/>header.hex<br/>32bit 像素数据"]
+    C -->|Verilog| D["Verilog 仿真引擎<br/>IP Core + BFM"]
+    D --> E["result.hex<br/>32bit 输出数据"]
+    E -->|Python| F["gen_output.py<br/>还原为图像/视频"]
+    F --> G["📷 输出图像/视频"]
+    G -->|Python| H["analyze.py<br/>图像质量分析"]
+    H --> I["📊 质量分析报告<br/>PSNR · Gamma · 直方图"]
+
+    style A fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px,color:#1E40AF
+    style G fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px,color:#1E40AF
+    style I fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46
+    style D fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    style B fill:#EFF6FF,stroke:#93C5FD,stroke-width:1px,color:#374151
+    style F fill:#EFF6FF,stroke:#93C5FD,stroke-width:1px,color:#374151
+    style H fill:#EFF6FF,stroke:#93C5FD,stroke-width:1px,color:#374151
+    style C fill:#F3F4F6,stroke:#D1D5DB,stroke-width:1px,color:#374151
+    style E fill:#F3F4F6,stroke:#D1D5DB,stroke-width:1px,color:#374151

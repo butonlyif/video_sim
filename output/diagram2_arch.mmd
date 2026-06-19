@@ -1,0 +1,42 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#3B82F6', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#2563EB', 'lineColor': '#6B7280', 'secondaryColor': '#10B981', 'tertiaryColor': '#ECFDF5', 'tertiaryTextColor': '#065F46', 'tertiaryBorderColor': '#10B981' }}}%%
+flowchart LR
+    subgraph Python["🐍 Python 工具链"]
+        direction TB
+        GEN["gen_stimulus.py<br/>🖼️ 图像→像素 hex"]
+        HDR["gen_header.py<br/>📋 帧头信息生成"]
+        OUT["gen_output.py<br/>🔢 hex→图像/视频"]
+        ANA["analyze.py<br/>📊 图像质量分析"]
+    end
+
+    subgraph Verilog["⚡ Verilog 仿真层"]
+        direction TB
+        SRC["axis_video_source<br/>📤 激励源 BFM"]
+        REG["reg_driver<br/>🔧 寄存器配置 BFM"]
+        DUT["DUT<br/>🎯 IP Core 待测模块"]
+        SNK["axis_video_sink<br/>📥 结果采集 BFM"]
+        CHK["protocol_checker<br/>✅ 协议检查器"]
+    end
+
+    GEN -->|"stimulus.hex"| SRC
+    HDR -->|"header.hex"| SRC
+    SRC -->|"AXI-Stream"| DUT
+    REG -->|"cfg / AXI-Lite"| DUT
+    DUT -->|"AXI-Stream"| SNK
+    CHK -.->|"监控"| SRC
+    CHK -.->|"监控"| SNK
+    SNK -->|"result.hex"| OUT
+    OUT -->|"output.png"| ANA
+    ANA -->|"report.json"| RPT["📊 分析报告"]
+
+    style Python fill:#EFF6FF,stroke:#3B82F6,stroke-width:2px
+    style Verilog fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style DUT fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    style RPT fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46
+    style GEN fill:#DBEAFE,stroke:#93C5FD,stroke-width:1px,color:#1E40AF
+    style HDR fill:#DBEAFE,stroke:#93C5FD,stroke-width:1px,color:#1E40AF
+    style OUT fill:#DBEAFE,stroke:#93C5FD,stroke-width:1px,color:#1E40AF
+    style ANA fill:#DBEAFE,stroke:#93C5FD,stroke-width:1px,color:#1E40AF
+    style SRC fill:#FEF3C7,stroke:#FCD34D,stroke-width:1px,color:#92400E
+    style REG fill:#FEF3C7,stroke:#FCD34D,stroke-width:1px,color:#92400E
+    style SNK fill:#FEF3C7,stroke:#FCD34D,stroke-width:1px,color:#92400E
+    style CHK fill:#FEF3C7,stroke:#FCD34D,stroke-width:1px,color:#92400E

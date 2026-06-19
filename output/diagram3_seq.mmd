@@ -1,0 +1,33 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'actorBkg': '#DBEAFE', 'actorBorder': '#3B82F6', 'actorTextColor': '#1E40AF', 'actorLineColor': '#93C5FD', 'signalColor': '#374151', 'signalTextColor': '#374151', 'labelBoxBkgColor': '#FEF3C7', 'labelBoxBorderColor': '#F59E0B', 'labelTextColor': '#92400E', 'loopTextColor': '#374151', 'activationBorderColor': '#3B82F6', 'activationBkgColor': '#EFF6FF', 'sequenceNumberColor': '#FFFFFF', 'noteBkgColor': '#FEF3C7', 'noteBorderColor': '#F59E0B', 'noteTextColor': '#92400E' }}}%%
+sequenceDiagram
+    autonumber
+
+    participant TB as 🧪 tb_top<br/>(Testbench)
+    participant REG as 🔧 reg_driver<br/>(寄存器配置)
+    participant SRC as 📤 axis_video_source<br/>(激励源)
+    participant DUT as 🎯 gamma_corr IP<br/>(待测模块)
+    participant SNK as 📥 axis_video_sink<br/>(结果采集)
+
+    Note over TB,DUT: 阶段一：初始化与寄存器配置
+
+    TB->>REG: 等待复位释放
+    REG->>DUT: write IMG_WIDTH = 1920
+    REG->>DUT: write IMG_HEIGHT = 1080
+    REG->>DUT: write IMG_FORMAT = 3 (RGB888)
+    REG->>DUT: write IP_CTRL = 0x01 (使能)
+    REG->>DUT: write IP_PARAM_GAMMA = 0x1600<br/>(gamma=2.2, Q8.8)
+
+    Note over TB,SNK: 阶段二：像素流传输
+
+    SRC->>DUT: tuser=1 (SOF 帧开始)
+    loop 逐行传输 (1080行 × 1920像素)
+        SRC->>DUT: tdata[0..3] (4像素并行)
+        SRC->>DUT: tlast=1 (EOL 行结束)
+    end
+
+    Note over TB,SNK: 阶段三：结果输出与仿真结束
+
+    DUT->>SNK: 流水线延迟后逐行输出 Gamma 校正结果
+    SNK->>SNK: 写入 result.hex
+    SNK->>TB: frame_done 脉冲
+    TB->>TB: $finish 仿真结束

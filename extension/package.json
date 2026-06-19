@@ -1,0 +1,65 @@
+{
+  "name": "vip-sim",
+  "displayName": "VIP Sim",
+  "description": "awesom VIP 仿真验证环境：一键仿真、图像对比、质量分析、波形查看",
+  "version": "0.9.3",
+  "publisher": "awesom",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vipsim.newProject",
+        "title": "VIP Sim: 新建仿真项目"
+      },
+      {
+        "command": "vipsim.console",
+        "title": "VIP Sim: 打开仿真控制台"
+      },
+      {
+        "command": "vipsim.viewWave",
+        "title": "VIP Sim: 查看波形"
+      },
+      {
+        "command": "vipsim.checkEnv",
+        "title": "VIP Sim: 环境自检"
+      },
+      {
+        "command": "vipsim.syncEnv",
+        "title": "VIP Sim: 同步环境文件到当前项目"
+      }
+    ],
+    "configuration": {
+      "title": "VIP Sim",
+      "properties": {
+        "vipsim.width": {
+          "type": "number",
+          "default": 64,
+          "description": "仿真图像宽度"
+        },
+        "vipsim.height": {
+          "type": "number",
+          "default": 48,
+          "description": "仿真图像高度"
+        },
+        "vipsim.frames": {
+          "type": "number",
+          "default": 1,
+          "description": "仿真帧数"
+        },
+        "vipsim.inputImage": {
+          "type": "string",
+          "default": "sim/testdata/test_input.png",
+          "description": "输入图像路径 (相对工作区)"
+        }
+      }
+    }
+  }
+}

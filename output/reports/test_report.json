@@ -1,0 +1,115 @@
+{
+  "input_file": "sim/testdata/test_input.png",
+  "output_file": "output/images/test_output.png",
+  "resolution": "640x480",
+  "timestamp": "2026-06-14T17:58:22.388696",
+  "metrics": {
+    "sharpness": {
+      "laplacian_variance": 1.2,
+      "sobel_mean": 3.074,
+      "tenengrad": 3598544.0,
+      "grade": "模糊"
+    },
+    "white_balance": {
+      "r_gain": 1.168,
+      "g_gain": 1.0,
+      "b_gain": 0.776,
+      "avg_r": 126.8,
+      "avg_g": 126.8,
+      "avg_b": 190.9,
+      "rb_ratio": 0.664,
+      "bias": "偏冷(蓝)",
+      "white_point": {
+        "r": 217.4,
+        "g": 234.2,
+        "b": 239.6
+      }
+    },
+    "histogram": {
+      "input": [
+        {
+          "channel": "R",
+          "mean": 126.8,
+          "std": 73.6,
+          "median": 127.0,
+          "min": 0,
+          "max": 254,
+          "percentile_5": 12.0,
+          "percentile_95": 241.0
+        },
+        {
+          "channel": "G",
+          "mean": 126.8,
+          "std": 73.6,
+          "median": 126.5,
+          "min": 0,
+          "max": 254,
+          "percentile_5": 12.0,
+          "percentile_95": 241.0
+        },
+        {
+          "channel": "B",
+          "mean": 190.9,
+          "std": 26.2,
+          "median": 191.0,
+          "min": 128,
+          "max": 254,
+          "percentile_5": 147.0,
+          "percentile_95": 235.0
+        }
+      ],
+      "input_mean": 134.1,
+      "output": [
+        {
+          "channel": "R",
+          "mean": 126.8,
+          "std": 73.6,
+          "median": 127.0,
+          "min": 0,
+          "max": 254,
+          "percentile_5": 12.0,
+          "percentile_95": 241.0
+        },
+        {
+          "channel": "G",
+          "mean": 126.8,
+          "std": 73.6,
+          "median": 126.5,
+          "min": 0,
+          "max": 254,
+          "percentile_5": 12.0,
+          "percentile_95": 241.0
+        },
+        {
+          "channel": "B",
+          "mean": 190.9,
+          "std": 26.2,
+          "median": 191.0,
+          "min": 128,
+          "max": 254,
+          "percentile_5": 147.0,
+          "percentile_95": 235.0
+        }
+      ],
+      "output_mean": 134.1,
+      "shift": "亮度降低 0.0 (均值变化)"
+    },
+    "psnr": {
+      "overall": 100.0,
+      "mse": 0.0,
+      "channels": {
+        "B": 100.0,
+        "G": 100.0,
+        "R": 100.0
+      },
+      "grade": "优秀"
+    },
+    "gamma": {
+      "measured": 1.0,
+      "target": 2.2,
+      "delta": 1.2,
+      "grade": "偏差大",
+      "sample_points": 15
+    }
+  }
+}

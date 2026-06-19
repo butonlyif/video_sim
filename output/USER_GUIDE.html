@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VIP 仿真验证系统 - 使用说明书</title>
+<style>
+@page {
+    size: A4;
+    margin: 2.2cm 2.5cm 2.2cm 2.5cm;
+    @bottom-center {
+        content: "— " counter(page) " —";
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+        font-size: 9pt;
+        color: #999;
+    }
+}
+
+body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", sans-serif;
+    font-size: 11pt;
+    line-height: 1.8;
+    color: #333;
+}
+
+h1 {
+    font-size: 22pt;
+    color: #1a365d;
+    border-bottom: 3px solid #3B82F6;
+    padding-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+h2 {
+    font-size: 16pt;
+    color: #2c5282;
+    border-bottom: 1.5px solid #93C5FD;
+    padding-bottom: 5px;
+    margin-top: 28px;
+    margin-bottom: 14px;
+}
+
+h3 {
+    font-size: 13pt;
+    color: #2d3748;
+    margin-top: 22px;
+    margin-bottom: 10px;
+}
+
+h4 {
+    font-size: 11.5pt;
+    color: #4a5568;
+    margin-top: 18px;
+    margin-bottom: 8px;
+}
+
+p {
+    margin: 8px 0;
+    text-align: justify;
+}
+
+code {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 9.5pt;
+    background: #f7fafc;
+    padding: 2px 5px;
+    border-radius: 3px;
+    border: 1px solid #e2e8f0;
+}
+
+pre {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 9pt;
+    line-height: 1.5;
+}
+
+pre code {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 10.5pt;
+}
+
+table th {
+    background: #EBF4FF;
+    color: #2c5282;
+    font-weight: 600;
+    padding: 10px 12px;
+    border: 1px solid #BEE3F8;
+    text-align: left;
+}
+
+table td {
+    padding: 8px 12px;
+    border: 1px solid #E2E8F0;
+}
+
+table tr:nth-child(even) {
+    background: #F7FAFC;
+}
+
+blockquote {
+    border-left: 4px solid #F59E0B;
+    background: #FFFBEB;
+    padding: 10px 16px;
+    margin: 12px 0;
+    color: #92400E;
+    border-radius: 0 5px 5px 0;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #E2E8F0;
+    margin: 24px 0;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 18px auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+img + p em {
+    display: block;
+    text-align: center;
+    color: #718096;
+    font-size: 10pt;
+    margin-top: 4px;
+}
+
+a {
+    color: #3B82F6;
+    text-decoration: none;
+}
+
+strong {
+    color: #1a365d;
+}
+
+em {
+    color: #4a5568;
+}
+
+/* 封面样式 */
+.cover-title {
+    text-align: center;
+    padding: 60px 0 30px 0;
+}
+
+.cover-title h1 {
+    border-bottom: none;
+    font-size: 28pt;
+    margin-bottom: 10px;
+}
+
+.cover-meta {
+    text-align: center;
+    color: #718096;
+    font-size: 10pt;
+    margin: 20px 0 40px 0;
+}
+</style>
+</head>
+<body>
+<h1 id="vip">VIP 仿真验证系统 使用说明书</h1>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>版本</td>
+<td>1.0.0</td>
+</tr>
+<tr>
+<td>日期</td>
+<td>2026-06-12</td>
+</tr>
+<tr>
+<td>适用系统</td>
+<td>awesom 视频处理IP</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_1">一、系统概览</h2>
+<p>VIP 仿真验证系统是一套围绕 awesom 视频处理 IP 的<strong>端到端仿真工具链</strong>，将图像/视频文件驱动为 Verilog 仿真激励，并将结果还原为可查看的图像/视频，同时提供量化分析。</p>
+<p><strong>一句话总结</strong>：给一张图进去，拿到一张图出来，中间经过你的 IP，最后告诉你 IP 处理得好不好。</p>
+<h3 id="_2">核心能力</h3>
+<p><img alt="核心能力流程图" src="/Users/wangxin/Documents/trae_projects/video_sim/output/diagram1_pipeline.png" /></p>
+<p><em>图1：VIP 仿真验证系统核心处理流程</em></p>
+<hr />
+<h2 id="_3">二、环境准备</h2>
+<p>在开始使用本系统之前，请确保以下环境已就绪：</p>
+<h3 id="21">2.1 硬件要求</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>最低配置</th>
+<th>推荐配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>4 核</td>
+<td>8 核以上</td>
+</tr>
+<tr>
+<td>内存</td>
+<td>8 GB</td>
+<td>16 GB 以上</td>
+</tr>
+<tr>
+<td>磁盘</td>
+<td>5 GB 可用空间</td>
+<td>20 GB 以上（用于存储测试视频）</td>
+</tr>
+<tr>
+<td>操作系统</td>
+<td>macOS / Linux / WSL2</td>
+<td>64-bit 系统</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-python">2.2 Python 环境</h3>
+<p><strong>版本要求</strong>：Python 3.8+</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># 检查 Python 版本</span>
+python3<span class="w"> </span>--version<span class="w">   </span><span class="c1"># 应 ≥ 3.8</span>
+
+<span class="c1"># （推荐）创建虚拟环境，避免依赖冲突</span>
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate
+</code></pre></div>
+
+<p><strong>依赖包安装</strong>：</p>
+<div class="codehilite"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>pillow<span class="w"> </span>opencv-python<span class="w"> </span>numpy
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>包名</th>
+<th>用途</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pillow</code></td>
+<td>图像读写</td>
+<td>PNG/BMP/JPG 等格式</td>
+</tr>
+<tr>
+<td><code>opencv-python</code></td>
+<td>颜色空间转换、视频拆帧/合成</td>
+<td>图像分析核心依赖</td>
+</tr>
+<tr>
+<td><code>numpy</code></td>
+<td>数组计算</td>
+<td>直方图、PSNR 等底层计算</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>注意</strong>：Apple Silicon (M1/M2/M3) 用户如果安装 <code>opencv-python</code> 失败，请使用 <code>pip install opencv-python-headless</code>。</p>
+</blockquote>
+<p><strong>验证 Python 环境</strong>：</p>
+<div class="codehilite"><pre><span></span><code>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import cv2; print(&#39;OpenCV version:&#39;, cv2.__version__)&quot;</span>
+python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import numpy; print(&#39;NumPy version:&#39;, numpy.__version__)&quot;</span>
+python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from PIL import Image; print(&#39;Pillow OK&#39;)&quot;</span>
+</code></pre></div>
+
+<h3 id="23-verilog">2.3 Verilog 仿真器</h3>
+<p>工具链支持两种仿真器，<strong>任选其一</strong>即可。建议初学者使用 Icarus Verilog。</p>
+<h4 id="aicarus-verilog">方式 A：Icarus Verilog（推荐，轻量级）</h4>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>安装命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>macOS</strong></td>
+<td><code>brew install icarus-verilog</code></td>
+</tr>
+<tr>
+<td><strong>Ubuntu/Debian</strong></td>
+<td><code>sudo apt install iverilog</code></td>
+</tr>
+<tr>
+<td><strong>Windows (WSL2)</strong></td>
+<td><code>sudo apt install iverilog</code>（在 WSL 内执行）</td>
+</tr>
+<tr>
+<td><strong>源码编译</strong></td>
+<td>参见 https://github.com/steveicarus/iverilog</td>
+</tr>
+</tbody>
+</table>
+<p><strong>验证安装</strong>：</p>
+<div class="codehilite"><pre><span></span><code>iverilog<span class="w"> </span>-V
+<span class="c1"># 预期输出: Icarus Verilog version 12.0 (stable) ...</span>
+
+vvp<span class="w"> </span>-V
+<span class="c1"># 预期输出: Icarus Verilog runtime engine ...</span>
+</code></pre></div>
+
+<h4 id="bverilator">方式 B：Verilator（高性能，适合大规模仿真）</h4>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>安装命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>macOS</strong></td>
+<td><code>brew install verilator</code></td>
+</tr>
+<tr>
+<td><strong>Ubuntu/Debian</strong></td>
+<td><code>sudo apt install verilator</code></td>
+</tr>
+<tr>
+<td><strong>源码编译</strong></td>
+<td>参见 https://verilator.org/guide/latest/</td>
+</tr>
+</tbody>
+</table>
+<p><strong>验证安装</strong>：</p>
+<div class="codehilite"><pre><span></span><code>verilator<span class="w"> </span>--version
+<span class="c1"># 预期输出: Verilator 5.x ...</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>选型建议</strong>：Icarus Verilog 安装简单、速度快，适合单帧图像仿真；Verilator 编译为 C++ 再运行，仿真速度更快，适合视频多帧连续仿真。</p>
+</blockquote>
+<h3 id="24">2.4 波形查看工具（可选，建议安装）</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># macOS</span>
+brew<span class="w"> </span>install<span class="w"> </span>gtkwave
+
+<span class="c1"># Ubuntu/Debian</span>
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>gtkwave
+</code></pre></div>
+
+<h3 id="25">2.5 目录结构确认</h3>
+<p>克隆或下载本仓库后，确认以下目录存在：</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>video_sim
+ls<span class="w"> </span>-la<span class="w"> </span>docs/<span class="w"> </span>sim/<span class="w"> </span>scripts/<span class="w"> </span>output/
+</code></pre></div>
+
+<p>确保 <code>scripts/</code> 下所有 <code>.py</code> 文件有执行权限：</p>
+<div class="codehilite"><pre><span></span><code>chmod<span class="w"> </span>+x<span class="w"> </span>scripts/*.py
+</code></pre></div>
+
+<h3 id="26">2.6 环境自检脚本</h3>
+<p>运行以下脚本一键检查环境是否就绪：</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;=== 环境自检 ===&quot;</span>
+
+<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;Python: &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>--version
+<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;OpenCV: &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import cv2; print(cv2.__version__)&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
+<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;NumPy:  &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import numpy; print(numpy.__version__)&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
+<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;Pillow: &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import PIL; print(PIL.__version__)&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
+<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;iverilog: &quot;</span><span class="p">;</span><span class="w"> </span>iverilog<span class="w"> </span>-V<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
+<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;verilator: &quot;</span><span class="p">;</span><span class="w"> </span>verilator<span class="w"> </span>--version<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装 (可选)&quot;</span>
+<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;gtkwave: &quot;</span><span class="p">;</span><span class="w"> </span>which<span class="w"> </span>gtkwave<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装 (可选)&quot;</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;=== 自检完成 ===&quot;</span>
+</code></pre></div>
+
+<p><strong>预期输出示例</strong>（无需全部匹配，Python 依赖 + 一个仿真器即可）：</p>
+<div class="codehilite"><pre><span></span><code>=== 环境自检 ===
+Python: Python 3.11.5
+OpenCV: 4.9.0
+NumPy:  1.26.4
+Pillow: 10.2.0
+iverilog: Icarus Verilog version 12.0 (stable)
+verilator: 未安装 (可选)
+gtkwave: /opt/homebrew/bin/gtkwave
+=== 自检完成 ===
+</code></pre></div>
+
+<hr />
+<h2 id="_4">三、系统架构</h2>
+<p><img alt="系统架构图" src="/Users/wangxin/Documents/trae_projects/video_sim/output/diagram2_arch.png" /></p>
+<p><em>图2：Python 工具链与 Verilog 仿真层双层架构</em></p>
+<h3 id="31">3.1 数据桥接</h3>
+<p>Python 和 Verilog 之间通过 <strong>hex 文本文件</strong> 桥接，不设运行时 IPC：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>方向</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stimulus.hex</td>
+<td>Python → 仿真</td>
+<td>32bit hex 像素数据</td>
+</tr>
+<tr>
+<td>header.hex</td>
+<td>Python → 仿真</td>
+<td>分辨率、格式、帧数等元数据</td>
+</tr>
+<tr>
+<td>result.hex</td>
+<td>仿真 → Python</td>
+<td>32bit hex 像素输出数据</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32">3.2 支持的像素格式</h3>
+<table>
+<thead>
+<tr>
+<th>格式 ID</th>
+<th>名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>RGB888</td>
+<td>24bit 彩色，最常用</td>
+</tr>
+<tr>
+<td>0</td>
+<td>RAW8</td>
+<td>8bit Bayer 原始</td>
+</tr>
+<tr>
+<td>1</td>
+<td>RAW10</td>
+<td>10bit Bayer 原始</td>
+</tr>
+<tr>
+<td>2</td>
+<td>RAW12</td>
+<td>12bit Bayer 原始</td>
+</tr>
+<tr>
+<td>4</td>
+<td>YUV422</td>
+<td>16bit 色度子采样</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="gamma-ip">四、完整案例：Gamma 校正 IP 仿真</h2>
+<p>本节以一个完整流程演示：输入一张图片，经过 Gamma 校正 IP，输出处理后的图片，然后分析 Gamma 曲线是否达标。</p>
+<h3 id="41">4.1 准备工作</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># 进入项目根目录</span>
+<span class="nb">cd</span><span class="w"> </span>video_sim
+
+<span class="c1"># 准备一张测试图像（以 1920×1080 的 RGB 彩色图为例）</span>
+cp<span class="w"> </span>~/Pictures/test_1080p.png<span class="w"> </span>sim/testdata/input.png
+</code></pre></div>
+
+<h3 id="42">4.2 第一步：生成仿真激励</h3>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/gen_stimulus.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input<span class="w">  </span>sim/testdata/input.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>sim/testdata/stimulus.hex<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--format<span class="w"> </span>RGB888<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--width<span class="w">  </span><span class="m">1920</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--height<span class="w"> </span><span class="m">1080</span>
+
+python<span class="w"> </span>scripts/gen_header.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>sim/testdata/header.hex<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--width<span class="w">  </span><span class="m">1920</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--height<span class="w"> </span><span class="m">1080</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--format<span class="w"> </span>RGB888<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--frames<span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+
+<p><strong><code>stimulus.hex</code> 内容示例</strong>（每行一个像素的 32bit hex 值）：</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">00</span><span class="n">FFA500</span><span class="w">   </span><span class="err">←</span><span class="w"> </span><span class="n">像素</span><span class="w"> </span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="mf">0</span><span class="p">):</span><span class="w"> </span><span class="n">R</span><span class="o">=</span><span class="n">FF</span><span class="p">,</span><span class="w"> </span><span class="n">G</span><span class="o">=</span><span class="n">A5</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="o">=</span><span class="mf">00</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">橙色</span>
+<span class="mf">0000</span><span class="n">FF00</span><span class="w">   </span><span class="err">←</span><span class="w"> </span><span class="n">像素</span><span class="w"> </span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="mf">1</span><span class="p">):</span><span class="w"> </span><span class="n">R</span><span class="o">=</span><span class="mf">00</span><span class="p">,</span><span class="w"> </span><span class="n">G</span><span class="o">=</span><span class="n">FF</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="o">=</span><span class="mf">00</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">绿色</span>
+<span class="mf">...</span>
+</code></pre></div>
+
+<h3 id="43">4.3 第二步：运行仿真</h3>
+<div class="codehilite"><pre><span></span><code>make<span class="w"> </span>sim<span class="w"> </span><span class="nv">IP</span><span class="o">=</span>gamma_corr<span class="w"> </span><span class="nv">WIDTH</span><span class="o">=</span><span class="m">1920</span><span class="w"> </span><span class="nv">HEIGHT</span><span class="o">=</span><span class="m">1080</span><span class="w"> </span><span class="nv">FORMAT</span><span class="o">=</span>RGB888
+</code></pre></div>
+
+<p>仿真过程：</p>
+<p><img alt="仿真过程序列图" src="/Users/wangxin/Documents/trae_projects/video_sim/output/diagram3_seq.png" /></p>
+<p><em>图3：Gamma 校正 IP 仿真全流程时序图</em></p>
+<h3 id="44">4.4 第三步：还原输出图像</h3>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/gen_output.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input<span class="w">  </span>sim/testdata/result.hex<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output/images/gamma_output.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--format<span class="w"> </span>RGB888<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--width<span class="w">  </span><span class="m">1920</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--height<span class="w"> </span><span class="m">1080</span>
+</code></pre></div>
+
+<p>执行后打开 <code>output/images/gamma_output.png</code>，对比原图即可直观看到 Gamma 效果。</p>
+<h3 id="45">4.5 第四步：图像质量分析</h3>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/analyze.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input<span class="w">  </span>sim/testdata/input.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output/images/gamma_output.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--all<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--report<span class="w"> </span>output/reports/gamma_report.json
+</code></pre></div>
+
+<p><strong>分析报告示例</strong>：</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;input_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;input.png&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;output_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gamma_output.png&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1920x1080&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RGB888&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-06-12 14:30:00&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;metrics&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;psnr&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;overall&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">44.2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;grade&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;优秀&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;gamma&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;measured&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.18</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.20</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.02</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;grade&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;优秀&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;histogram&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;input_mean&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">128.5</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;output_mean&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">186.3</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;shift&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;亮部提升，符合 gamma=2.2 预期&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Gamma 校正效果优秀。实测 Gamma 值 2.18，与目标 2.20 偏差仅 0.02。&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="46">4.6 第五步（可选）：查看波形</h3>
+<div class="codehilite"><pre><span></span><code>make<span class="w"> </span>view_wave<span class="w"> </span><span class="nv">IP</span><span class="o">=</span>gamma_corr
+</code></pre></div>
+
+<p>在 GTKWave 中检查 tvalid/tready 握手时序、tuser/tlast 信号和 tdata 数据流。</p>
+<h3 id="47">4.7 一键流程</h3>
+<div class="codehilite"><pre><span></span><code>make<span class="w"> </span>all<span class="w"> </span><span class="nv">IP</span><span class="o">=</span>gamma_corr<span class="w"> </span><span class="nv">INPUT_IMG</span><span class="o">=</span>sim/testdata/input.png
+</code></pre></div>
+
+<p>该命令自动执行 <strong>激励生成 → 仿真 → 图像还原 → 质量分析</strong> 全部四个步骤。</p>
+<hr />
+<h2 id="_5">五、命令参考</h2>
+<h3 id="51-makefile">5.1 Makefile 目标</h3>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make sim</code></td>
+<td>运行仿真</td>
+<td><code>make sim IP=gamma_corr</code></td>
+</tr>
+<tr>
+<td><code>make gen_output</code></td>
+<td>结果 hex 还原为图像</td>
+<td><code>make gen_output IP=gamma_corr</code></td>
+</tr>
+<tr>
+<td><code>make analyze</code></td>
+<td>图像质量分析</td>
+<td><code>make analyze IP=gamma_corr</code></td>
+</tr>
+<tr>
+<td><code>make all</code></td>
+<td>一键 sim → output → analyze</td>
+<td><code>make all IP=gamma_corr</code></td>
+</tr>
+<tr>
+<td><code>make view_wave</code></td>
+<td>打开 GTKWave 查看波形</td>
+<td><code>make view_wave IP=gamma_corr</code></td>
+</tr>
+<tr>
+<td><code>make test_all</code></td>
+<td>对所有 IP 运行全部测试</td>
+<td><code>make test_all</code></td>
+</tr>
+<tr>
+<td><code>make clean</code></td>
+<td>清理输出</td>
+<td><code>make clean</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Makefile 变量</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IP</code></td>
+<td>gamma_corr</td>
+<td>目标IP名称</td>
+</tr>
+<tr>
+<td><code>SIM</code></td>
+<td>icarus</td>
+<td>仿真器 (icarus/verilator)</td>
+</tr>
+<tr>
+<td><code>WIDTH</code></td>
+<td>1920</td>
+<td>图像宽度</td>
+</tr>
+<tr>
+<td><code>HEIGHT</code></td>
+<td>1080</td>
+<td>图像高度</td>
+</tr>
+<tr>
+<td><code>FORMAT</code></td>
+<td>RGB888</td>
+<td>像素格式</td>
+</tr>
+<tr>
+<td><code>INPUT_IMG</code></td>
+<td>sim/testdata/input.png</td>
+<td>输入图像路径</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-python">5.2 Python 脚本参数</h3>
+<p><strong>gen_stimulus.py</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-i, --input</code></td>
+<td>输入图像路径</td>
+<td><code>input.png</code></td>
+</tr>
+<tr>
+<td><code>-o, --output</code></td>
+<td>输出 hex 路径</td>
+<td><code>stimulus.hex</code></td>
+</tr>
+<tr>
+<td><code>-f, --format</code></td>
+<td>像素格式</td>
+<td><code>RGB888</code></td>
+</tr>
+<tr>
+<td><code>-w, --width</code></td>
+<td>目标宽度</td>
+<td><code>1920</code></td>
+</tr>
+<tr>
+<td><code>-h, --height</code></td>
+<td>目标高度</td>
+<td><code>1080</code></td>
+</tr>
+<tr>
+<td><code>--fps</code></td>
+<td>帧率（多帧用）</td>
+<td><code>30</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>analyze.py</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--input</code></td>
+<td>输入原图路径</td>
+<td><code>input.png</code></td>
+</tr>
+<tr>
+<td><code>--output</code></td>
+<td>IP输出图路径</td>
+<td><code>output.png</code></td>
+</tr>
+<tr>
+<td><code>--all</code></td>
+<td>运行全部分析项</td>
+<td></td>
+</tr>
+<tr>
+<td><code>--metric</code></td>
+<td>单项分析</td>
+<td><code>sharpness</code></td>
+</tr>
+<tr>
+<td><code>--report</code></td>
+<td>报告输出路径</td>
+<td><code>report.json</code></td>
+</tr>
+<tr>
+<td><code>--roi</code></td>
+<td>分析区域 (x,y,w,h)</td>
+<td><code>100,100,200,200</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="53">5.3 支持的分析指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>参数值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>锐度</td>
+<td><code>sharpness</code></td>
+<td>Laplacian/Sobel/Tenengrad/MTF</td>
+</tr>
+<tr>
+<td>白平衡</td>
+<td><code>white_balance</code></td>
+<td>灰度世界增益/色温估算</td>
+</tr>
+<tr>
+<td>PSNR</td>
+<td><code>psnr</code></td>
+<td>峰值信噪比，需提供参考图</td>
+</tr>
+<tr>
+<td>Gamma 曲线</td>
+<td><code>gamma</code></td>
+<td>实测 vs 目标 Gamma 对比</td>
+</tr>
+<tr>
+<td>直方图</td>
+<td><code>histogram</code></td>
+<td>RGB 三通道直方图分布</td>
+</tr>
+<tr>
+<td>噪声</td>
+<td><code>noise</code></td>
+<td>高斯/椒盐噪声水平评估</td>
+</tr>
+<tr>
+<td>色准</td>
+<td><code>color_checker</code></td>
+<td>24色卡 ΔE 分析（需色卡图像）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_6">六、视频处理流程</h2>
+<p>处理视频时，系统逐帧拆分、逐帧仿真、再合成为视频。</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># 1. 将视频拆帧并生成激励</span>
+python<span class="w"> </span>scripts/gen_video_stimulus.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>input.mp4<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>sim/testdata/<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>RGB888<span class="w"> </span>-w<span class="w"> </span><span class="m">1920</span><span class="w"> </span>-h<span class="w"> </span><span class="m">1080</span>
+
+<span class="c1"># 2. 运行多帧仿真</span>
+make<span class="w"> </span>sim<span class="w"> </span><span class="nv">IP</span><span class="o">=</span>denoise<span class="w"> </span><span class="nv">FRAMES</span><span class="o">=</span><span class="m">300</span>
+
+<span class="c1"># 3. 合成输出视频</span>
+python<span class="w"> </span>scripts/gen_output.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>sim/testdata/result.hex<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>output/video/result.mp4<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>RGB888<span class="w"> </span>-w<span class="w"> </span><span class="m">1920</span><span class="w"> </span>-h<span class="w"> </span><span class="m">1080</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fps<span class="w"> </span><span class="m">30</span><span class="w"> </span>--frames<span class="w"> </span><span class="m">300</span>
+
+<span class="c1"># 4. 逐帧分析（取关键帧）</span>
+python<span class="w"> </span>scripts/analyze.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input<span class="w"> </span>input_keyframe.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_keyframe.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--all
+</code></pre></div>
+
+<hr />
+<h2 id="_7">七、目录速查</h2>
+<div class="codehilite"><pre><span></span><code>video_sim/
+├── docs/
+│   ├── DESIGN_SPEC.md          ← 设计说明书
+│   └── USER_GUIDE.md           ← 本文件
+├── sim/
+│   ├── common/                 ← 公共 BFM（4个模块）
+│   ├── tests/                  ← 各 IP 的 Testbench
+│   └── testdata/               ← 仿真数据（hex 文件放这里）
+├── scripts/                    ← Python 工具集
+│   ├── analyzers/              ← 分析算法子模块
+│   └── utils/                  ← 像素格式、hex IO 工具
+├── output/
+│   ├── images/                 ← 输出图像
+│   ├── reports/                ← 分析报告 JSON
+│   └── waves/                  ← .vcd 波形文件
+├── Makefile
+└── README.md
+</code></pre></div>
+
+<hr />
+<h2 id="_8">八、常见问题</h2>
+<p><strong>Q: 仿真报 "stimulus.hex not found"</strong></p>
+<p>A: 先运行 <code>python scripts/gen_stimulus.py ...</code> 生成激励文件，或使用 <code>make sim</code>（会自动调用 gen_stimulus）。</p>
+<hr />
+<p><strong>Q: 图像输出颜色不对</strong></p>
+<p>A: 检查 <code>--format</code> 参数是否与 IP 的实际数据格式一致。RGB888 和 YUV422 的字节排列不同。</p>
+<hr />
+<p><strong>Q: 分析工具报 "cv2 module not found"</strong></p>
+<p>A: <code>pip install opencv-python</code>，如果使用 ARM Mac 可能需要 <code>pip install opencv-python-headless</code>。</p>
+<hr />
+<p><strong>Q: 如何处理 4K 分辨率图像</strong></p>
+<p>A: <code>gen_stimulus.py</code> 会直接报分辨率超限，需确认目标 IP 支持 4K。修改 <code>--width 3840 --height 2160</code> 即可，但 hex 文件会很大（3840×2160 = 8.3M 行）。</p>
+<p><strong>Q: 如何增加新的分析指标</strong></p>
+<p>A: 在 <code>scripts/analyzers/</code> 下新建模块，实现一个函数签名为 <code>def analyze(input_img: np.ndarray, output_img: np.ndarray = None) -&gt; dict</code> 即可。<code>analyze.py</code> 会自动发现并注册。</p>
+<hr />
+<p><strong>文档版本</strong>：V1.0.0<br />
+<strong>最后更新</strong>：2026-06-12</p>
+</body>
+</html>
