@@ -46,6 +46,9 @@ def main():
     ap.add_argument('--report', required=True)
     ap.add_argument('--diff')
     ap.add_argument('--diff-gain', type=int, default=8)
+    ap.add_argument('--category', default='pointwise',
+                    choices=['pointwise', 'geometric', 'interframe'],
+                    help='IP 分类(平台改进 #3): 非 pointwise 跳过逐像素对齐指标')
     args = ap.parse_args()
 
     h1("加载图像")
@@ -55,25 +58,32 @@ def main():
         error_exit(f"无法读取输入 {args.input}")
     if img_out is None:
         error_exit(f"无法读取输出 {args.output}")
-    if img_in.shape != img_out.shape:
+    # 逐像素对齐指标(PSNR/差异图)只对 pointwise(输入输出同尺寸同语义)有意义;
+    # 几何/帧间类 IP 强行对齐会产生误导性指标, 正确入口是 verify 金标准(平台改进 #3)。
+    aligned = (args.category == 'pointwise')
+    if aligned and img_in.shape != img_out.shape:
         error_exit(f"尺寸不一致: {img_in.shape} vs {img_out.shape}")
-    h, w, _ = img_in.shape
+    h, w, _ = img_out.shape
     kv("输入", args.input)
     kv("输出", args.output)
-    kv("分辨率", f"{w} × {h}")
+    kv("分类", args.category)
+    kv("分辨率", f"{w} × {h}"
+       + ("" if aligned else f"  (输入 {img_in.shape[1]} × {img_in.shape[0]})"))
 
-    identical = bool(np.array_equal(img_in, img_out))
+    identical = aligned and bool(np.array_equal(img_in, img_out))
 
-    # 成对分析 (analyzers 模块: analyze(img) 测量该图)
+    # 单图分析 (analyzers 模块: analyze(img) 测量该图, 不要求对齐)
     sh_in, sh_out = sharpness.analyze(img_in), sharpness.analyze(img_out)
     wb_in, wb_out = white_balance.analyze(img_in), white_balance.analyze(img_out)
-    pr = psnr_mod.analyze(img_in, img_out)
+    # 逐像素对齐指标: 仅 pointwise 计算
+    pr = psnr_mod.analyze(img_in, img_out) if aligned else {}
     ch = pr.get('channels', {})
 
     report = {
         'input_file': args.input, 'output_file': args.output,
+        'category': args.category, 'aligned_metrics': aligned,
         'resolution': f"{w}x{h}", 'identical': identical,
-        'psnr': {
+        'psnr': None if not aligned else {
             'overall': None if identical else pr.get('overall'),
             'channel_r': None if identical else ch.get('R'),
             'channel_g': None if identical else ch.get('G'),
@@ -85,8 +95,8 @@ def main():
         'histograms': {'input': hist256(img_in), 'output': hist256(img_out)},
     }
 
-    # 差异热力图
-    if args.diff:
+    # 差异热力图: 仅 pointwise (需逐像素对齐)
+    if args.diff and aligned:
         d = cv2.absdiff(img_in, img_out).max(axis=2)
         d = np.clip(d.astype(np.int32) * args.diff_gain, 0, 255).astype(np.uint8)
         cv2.imwrite(args.diff, cv2.applyColorMap(d, cv2.COLORMAP_JET))
@@ -99,7 +109,9 @@ def main():
        f"{sh_out['laplacian_variance']}  [{sg(sh_out['grade'])}]")
     kv("白平衡增益(出)", f"R {wb_out['r_gain']} / G {wb_out['g_gain']} / "
        f"B {wb_out['b_gain']}  ({wb_out.get('bias', '')})")
-    if identical:
+    if not aligned:
+        kv("PSNR/差异", yellow(f"不适用({args.category}类) — 请用 verify 金标准比对"))
+    elif identical:
         kv("PSNR", green("inf (输出与输入完全一致)"))
     else:
         p = pr.get('overall', 0)

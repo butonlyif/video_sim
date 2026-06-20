@@ -5,6 +5,7 @@ output/reports/*
 sim/testdata/stimulus.hex
 sim/testdata/result.hex
 sim/testdata/regcfg.hex
+sim/testdata/expected.hex
 sim/testdata/_*
 *.vvp
 .DS_Store

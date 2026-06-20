@@ -1,0 +1,16 @@
+# 打包排除项 (vsce package) — 不随扩展交付的内容
+
+# 历史 / 本目录构建产物
+*.vsix
+**/.DS_Store
+**/__pycache__/**
+
+# 模板内的运行期产物 (镜像 template/.gitignore; vsce 不读 .gitignore)
+template/.venv/**
+template/output/**
+template/sim/testdata/stimulus.hex
+template/sim/testdata/result.hex
+template/sim/testdata/regcfg.hex
+template/sim/testdata/expected.hex
+template/sim/testdata/_*
+template/**/*.vvp

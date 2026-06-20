@@ -772,7 +772,79 @@ clean:
 
 ---
 
-## 九、后续扩展计划
+## 九、代码生成器（Spec 驱动）
+
+### 9.1 设计理念
+
+**Spec 驱动开发** = 从同一份算法规格文件 `.ip_spec.yaml` **同时生成** RTL、金标准、regdef、TB。RTL 和金标准天然逐位一致，无需人工对照。
+
+```
+.ip_spec.yaml (算法描述)
+        │
+        └─────── gen_ip_spec.py ─────────────┐
+                  (Python, 标准库实现)          │
+                                             ↓
+         ┌──────────────┬─────────────┬────────┴────────┐
+         │ RTL (.v)     │ golden.py   │ regdef.json    │ TB (.v)
+         │ Verilog      │ 按位比对模型 │ 控制台寄存器表单│ 仿真骨架
+         └──────────────┴─────────────┴────────────────┘
+```
+
+### 9.2 .ip_spec.yaml 格式
+
+见 `.trae/rules/project_rules.md` §A.1 完整格式定义。核心结构：
+
+```yaml
+name: <ip_name>           # 小写下划线
+algorithm:
+  type: conv_1d           # passthrough / gain / lut / conv_1d / csc / sharpen / denoise
+  kernel: [1, -2, 1]     # 整数系数
+  fixed_point:
+    shift: 3              # 算术右移位数
+registers:
+  - addr: "0x04"
+    default: "0x00000001"
+pipeline:
+  latency: 1
+```
+
+### 9.3 gen_ip_spec.py 命令行接口
+
+| 命令 | 说明 |
+|---|---|
+| `--spec <file>` | 从 YAML 文件生成 |
+| `--chain a,b,c` | 生成级联组合 IP（RTL + regdef）|
+| `--register-chain <name>` | 注册级联组合到 golden.py（金标准自动对接）|
+| `--dry-run` | 仅预览，不写文件 |
+
+### 9.4 生成物覆盖
+
+| 产出 | 内容 | 需人工修正 |
+|---|---|---|
+| `rtl/<ip>/<ip>.v` | Verilog RTL（AXI-Stream 接口 + 数据通路）| 数据通路算法 |
+| `rtl/<ip>/regdef.json` | 寄存器描述 | 否（若 YAML 正确）|
+| `sim/tests/tb_<ip>.v` | Testbench 骨架 | DUT 例化处 |
+| `scripts/golden.py` | 金标准函数（追加到 MODELS/CONFIG）| 是（RTL 定点细节）|
+
+### 9.5 级联组合生成
+
+多 IP 直连时（如 AWB→Gamma→锐化），只需一条命令：
+
+```bash
+python scripts/gen_ip_spec.py \
+    --chain awb,gamma,sharpen \
+    --register-chain awb_gamma_sharpen
+```
+
+自动产出：
+
+- `rtl/awb_gamma_sharpen/awb_gamma_sharpen.v` — 三个 IP 级联直连
+- `rtl/awb_gamma_sharpen/regdef.json` — 合并子 IP 寄存器表（按 0x40 分段）
+- `scripts/golden.py` — `m_awb_gamma_sharpen = m_awb ∘ m_gamma ∘ m_sharpen`
+
+---
+
+## 十、后续扩展计划
 
 | 阶段 | 内容                         | 状态 |
 | ---- | ---------------------------- | ---- |
@@ -781,8 +853,9 @@ clean:
 | 3    | 对接全部 7 个 IP 的仿真测试      | ✅ 已完成 |
 | 4    | 金标准模型按位比对（scripts/golden.py + compare.py） | ✅ 已完成 |
 | 5    | DDR 帧缓冲基础设施（行为级 DDR4 AXI4 + 帧缓冲封装） | ✅ 已完成 |
-| 6    | 支持 Verilator C++ 联合仿真（更高性能） | 待做 |
-| 7    | CI/CD 自动化回归测试流水线         | 待做 |
+| 6    | **Spec 驱动代码生成器（RTL + golden + TB + regdef 同时生成）** | ✅ 已完成 |
+| 7    | 支持 Verilator C++ 联合仿真（更高性能） | 待做 |
+| 8    | CI/CD 自动化回归测试流水线         | 待做 |
 
 **阶段 5 — DDR 帧缓冲**：`sim/common/ddr_model.v`（标准 AXI4 内存映射从接口，
 参数化位宽/容量/读写延迟）+ `sim/common/axi_frame_buffer.v`（AXI4 主封装，双槽

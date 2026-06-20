@@ -129,7 +129,15 @@ VIP Sim: 打开分析报告
 VIP Sim: 生成测试图卡...
 VIP Sim: 查看波形 (GTKWave)
 VIP Sim: 环境自检 (检查 python/iverilog/gtkwave)
+VIP Sim: 新建仿真项目（从课题模板）
+VIP Sim: Spec 驱动生成 IP...（输入规格描述，调用 gen_ip_spec.py）
+VIP Sim: Spec 驱动生成级联 IP...（输入 IP 列表，生成级联组合）
 ```
+
+**Spec 驱动命令说明**：
+
+- `VIP Sim: Spec 驱动生成 IP...`：弹出输入框，输入算法描述（如"3×3 锐化，系数[1,-2,1]"），自动生成 `.ip_spec.yaml` 并执行 `gen_ip_spec.py`，在 IP 列表中注册新 IP
+- `VIP Sim: Spec 驱动生成级联 IP...`：弹出输入框，输入逗号分隔的 IP 名（如 `awb,gamma,sharpen`），生成级联组合 RTL + regdef + 金标准
 
 ---
 
@@ -226,6 +234,7 @@ flowchart LR
 
 - **卡片式分区**：每类功能（参数/寄存器/媒体/分析）独立卡片，圆角 10px + 阴影
 - **渐变主按钮**：蓝紫渐变 `linear-gradient(135deg,#3b82f6,#7c3aed)` + 发光阴影，视觉引导点击
+- **波形按钮强调**：「查看波形」用青绿渐变 `linear-gradient(135deg,#0ea5e9,#14b8a6)`（`.btn-wave`），区别于主按钮、置于工具栏右侧，显眼可点
 - **双栏媒体面板**：dashed 虚线边框 + hover 高亮，输入/输出左右对称
 - **Pill 标签**：PASS(绿)/FAIL(红)/警告(黄)/灰度(灰) 圆角标签，替代纯色 badge
 - **呼吸动画状态**：运行中显示绿色呼吸点 `@keyframes pulse`
@@ -239,7 +248,7 @@ flowchart LR
 | --- | --- | --- |
 | 标题横幅 | `.header` | 渐变背景 + 大标题 + 副标题 |
 | 功能卡片 | `.card` / `.card-head` / `.card-body` | 分区容器，head 作 section 标签 |
-| 按钮系统 | `.btn` / `.btn-primary` / `.btn-secondary` / `.btn-sm` | 分层按钮 |
+| 按钮系统 | `.btn` / `.btn-primary` / `.btn-secondary` / `.btn-wave` / `.btn-sm` | 分层按钮（`.btn-wave`=查看波形强调色） |
 | 参数行 | `.param-row` / `.param-item` | 水平排列的表单行 |
 | 媒体网格 | `.media-grid` / `.media-card` | 输入/输出双栏 |
 | 分析网格 | `.analysis-grid` | 6 项分析 3×2 网格 |
@@ -290,7 +299,47 @@ flowchart LR
 | 3   | 侧边栏 TreeView（IP 列表/用例/运行历史）                  | 命令面板入口已可用, 此为易用性增强           |
 | 4   | 内嵌波形查看器、CI 集成                               | —                           |
 
+### 5.5 统一入口：控制台兼任新建项目（v0.9.4 实现）
+
+原先「新建仿真项目」与「打开仿真控制台」是两个独立命令，新建只能走命令面板，
+无界面承载。改为**以仿真控制台为唯一入口**，按工作区状态自适应：
+
+```mermaid
+flowchart LR
+    OPEN["打开仿真控制台"] --> Q{"isVipProject?"}
+    Q -- 是 --> CON["控制台主体<br/>自动载入 IP/寄存器/媒体"]
+    Q -- 否 --> WEL["欢迎态<br/>开始使用引导"]
+    WEL -- "➕ 新建仿真项目" --> NEW["选位置/起名 → 复制模板 → 建 venv"]
+    NEW --> CON
+    START["打开仿真项目文件夹"] -. onStartupFinished .-> CON
+```
+
+- `consoleState()` 在非项目工作区返回 `{mode:'welcome'}`，Webview 据此切换
+  「欢迎态 / 控制台主体」两套视图；新建按钮 postMessage `newProject` → 复用 `cmdNewProject`
+- `activate()` 注册 `onStartupFinished`：打开的就是 VIP 项目时自动弹出控制台
+- 命令 `vipsim.newProject` 保留，等价于引导页按钮；日常单一入口=「打开仿真控制台」
+
+### 5.6 单一规格驱动生成的金标准修订（v0.9.4 修复）
+
+`gen_ip_spec.py` 从一份 `.ip_spec.yaml` 同时产出 RTL + regdef + TB + `golden.py` 函数，
+「同源 → 天然逐位一致」。本轮修复了使该链路失效的若干缺陷：
+
+| 缺陷 | 现象 | 修复 |
+| --- | --- | --- |
+| YAML 解析忽略缩进 | 嵌套 dict/list 全塌成顶层列表，`--spec` 完全不可用 | 重写为按缩进的递归解析 |
+| 金标准缺省值用字符串键 | `regs.get(0xNN)` 整数查表永远落空，spec 寄存器缺省被静默忽略 | 生成整数键/值字面量 |
+| 金标准函数追加到文件末尾 | `MODELS` 字典 import 时引用未定义函数 → `NameError` | 改为插在 `MODELS = {` 之前 |
+| 级联 RTL 混用 f-string 与 `.format` | `wire_decls` 未定义 → `NameError` | 统一为纯 f-string |
+| 数据通路双驱动 `m_axis_tdata` | reg 端口被 `assign` 又被 always 赋值，RTL 无法编译 | kernel 输出走 `kernel_tdata` 线网，always 寄存 |
+| 寄存器写解码放进复位分支 | 配置只在复位时写、忽略 `cfg_wen`，kernel 读到 X | 复位置缺省值 / `cfg_wen` 时按地址写 |
+| gain 截断无饱和、位选越界 | RTL 与 golden 不一致 | 统一为 `(px*gain)>>8` 饱和（整数定点） |
+
+修复后 `passthrough` / `gain` 经 `make sim && make verify` 实测 **0 失配（逐位一致）**。
+已知遗留：`conv_1d` 的 RTL 把 R/G/B 当三个抽头，而 golden 做空间邻域卷积，二者
+语义不一致（真正的 1D 空间卷积需行缓冲）——`conv_1d` 暂不保证逐位对齐，已在生成
+代码内注明；`_np_shift()` 为未使用的死函数（含一处缺 f 前缀的笔误），保留待清理。
+
 ---
 
-**文档版本**：V1.0.0
-**最后更新**：2026-06-12
+**文档版本**：V1.1.0
+**最后更新**：2026-06-19

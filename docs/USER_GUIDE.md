@@ -27,10 +27,10 @@ VIP 仿真验证平台是一套**端到端视频 IP 仿真环境**，以 Trae / 
 
 ### 2.1 安装扩展
 
-拿到 `vip-sim-0.9.0.vsix` 后，在终端执行：
+拿到 `vip-sim-0.9.5.vsix` 后，在终端执行：
 
 ```bash
-code --install-extension vip-sim-0.9.0.vsix
+code --install-extension vip-sim-0.9.5.vsix
 ```
 
 安装完成后**重新加载 Trae / VS Code 窗口**（`Cmd+Shift+P` → `Developer: Reload Window`）。
@@ -135,20 +135,30 @@ Python 与 Verilog 之间通过 **hex 文本文件** 桥接：
 
 ## 四、Trae 扩展使用（推荐入口）
 
-### 4.1 新建仿真项目
+### 4.1 统一入口：仿真控制台
 
-`Cmd+Shift+P` → `VIP Sim: 新建仿真项目` → 选择存放位置 → 输入项目名（如 `my_gamma_test`）。
+**只需记住一个入口** —— `Cmd+Shift+P` → `VIP Sim: 打开仿真控制台`，控制台会根据当前工作区自动切换两种形态：
 
-扩展自动完成：
+- **已是仿真项目** → 直接载入控制台，自动识别该项目的 IP / 寄存器 / 输入输出（无需手动导入）。打开一个仿真项目文件夹时，控制台还会**自动弹出**。
+- **不是仿真项目（或未打开文件夹）** → 控制台显示「开始使用」引导页，点击 **➕ 新建仿真项目** 即可在同一界面内创建项目，无需另跑命令。
+
+```mermaid
+flowchart LR
+  A[打开仿真控制台] --> B{当前是仿真项目?}
+  B -- 是 --> C[载入控制台<br/>自动导入项目]
+  B -- 否 --> D[开始使用引导页]
+  D -- 点击新建 --> E[选位置/起名 → 复制模板 → 建 venv]
+  E --> F[打开项目] --> C
+```
+
+新建项目时扩展自动完成：
 1. 复制完整仿真环境到新目录（Python 脚本 / Verilog BFM / Makefile / 示例 DUT）
 2. 创建项目内 Python 虚拟环境 `.venv`，安装 opencv/numpy/pillow
-3. 新窗口打开项目
+3. 打开项目（控制台随之自动载入）
 
-### 4.2 打开仿真控制台
+> `VIP Sim: 新建仿真项目` 命令仍保留，等价于引导页的「新建」按钮；日常只用「打开仿真控制台」一个入口即可。
 
-`Cmd+Shift+P` → `VIP Sim: 打开仿真控制台`
-
-控制台布局：
+### 4.2 控制台布局
 
 ```
 ┌─ 🎬 VIP 仿真控制台 ────────────────────────┐
@@ -186,8 +196,8 @@ Python 与 Verilog 之间通过 **hex 文本文件** 桥接：
 
 | 命令                                       | 说明                        |
 | ---------------------------------------- | ------------------------- |
-| VIP Sim: 新建仿真项目                          | 复制完整工具包到新目录并创建 venv       |
-| VIP Sim: 打开仿真控制台                         | 主 GUI（运行 / 分析 / 寄存器 / 图卡） |
+| VIP Sim: 打开仿真控制台 **（统一入口）**             | 主 GUI；有项目则自动载入，无项目则引导新建 |
+| VIP Sim: 新建仿真项目                          | 复制完整工具包到新目录并创建 venv（等价于控制台引导页的「新建」按钮） |
 | VIP Sim: 查看波形                            | IDE 内打开本次仿真 VCD           |
 | VIP Sim: 环境自检                            | 检查 iverilog / venv / 环境文件版本 |
 | VIP Sim: 同步环境文件到当前项目                     | 扩展升级后更新老项目的 BFM / 脚本 / 规则 |
@@ -208,7 +218,9 @@ Python 与 Verilog 之间通过 **hex 文本文件** 桥接：
 
 **寄存器编辑**：控制台自动读取 `rtl/<IP>/regdef.json`，RW 寄存器显示为可编辑输入框，RO 寄存器灰显缺省值。点击运行时会按当前编辑值生成 `regcfg.hex` 写入仿真。
 
-**运行仿真**：一键串行执行 `gen_stimulus → gen_header → iverilog 编译 → vvp 运行 → gen_output → analyze`。
+**寄存器读写自检**：仿真不是把表单值"写下去就算"。视频流启动前，`reg_config` BFM 会先逐条写入寄存器，再**逐个回读比对**，用逻辑实跑一遍寄存器读/写时序，在输出面板打印 `REGCHK PASS/FAIL`（失配给出 `@addr/写/读` 明细），确认 IP 寄存器接口正确后才放行像素数据。
+
+**运行仿真**：一键串行执行 `gen_stimulus → gen_header → iverilog 编译 → vvp 运行（先寄存器配置+自检，再视频流）→ gen_output → analyze`。
 
 **分析面板**：6 个按钮各对应一个独立 Webview 面板，可同时打开多面板对比查看。
 
@@ -231,6 +243,7 @@ Python 与 Verilog 之间通过 **hex 文本文件** 桥接：
 **控制台输出示例**（金标准 PASS 时）：
 
 ```
+🔧 寄存器自检  REGCHK PASS  2/2 读回一致（写后回读比对）
 📋 金标准  PASS  逐位精确，0 个像素失配
 📊 质量分析  PSNR 42.3 dB · 640×480
 ```
@@ -243,31 +256,54 @@ make all IP=gamma_corr WIDTH=640 HEIGHT=480 INPUT_IMG=sim/testdata/input.png
 
 ---
 
-### 场景 2：从零开发 IP（Vibe Coding 流程）
+### 场景 2：从零开发新 IP（Vibe Coding 流程）
 
 **适用场景**：用户拿到项目后，手头没有 IP 代码，通过 AI 生成。
 
-**步骤**：
+**推荐方式 — Spec 驱动**（RTL 和金标准同时生成，天然一致）：
+
+1. 对 AI 说："实现一个 3-tap 锐化滤波器，系数 [1,-2,1]，支持 bypass"（或更具体的规格）
+2. AI 按 `.trae/rules/project_rules.md` 生成 `.ip_spec.yaml` + 调用 `gen_ip_spec.py`
+3. 工具链**一次性**产出 4 个文件：
+
+   | 文件 | 说明 |
+   |---|---|
+   | `rtl/<ip>/<ip>.v` | Verilog RTL，可直接用或修改数据通路 |
+   | `rtl/<ip>/regdef.json` | 控制台寄存器表单数据源 |
+   | `sim/tests/tb_<ip>.v` | Testbench 骨架 |
+   | `scripts/golden.py` | 金标准函数（已追加到 MODELS/CONFIG） |
+
+4. 刷新控制台，IP 下拉框自动出现新 IP
+5. 运行 `make verify IP=<ip>` 验证（金标准自动比对）
+
+**传统方式 — 文档参照**（7 个已有课题）：
 
 1. 阅读 `docs/IP开发课题说明书.md` 中对应课题的规格
 2. 对 AI 说："实现课题二 Gamma 校正 IP，按项目规则放置文件"
-3. AI 按 `.trae/rules/project_rules.md` 自动生成：
-   - `rtl/gamma_corr/gamma_corr.v` — RTL
-   - `rtl/gamma_corr/regdef.json` — 寄存器描述
-   - `sim/tests/tb_gamma_corr.v` — Testbench
-4. 刷新控制台，IP 下拉框自动出现 `gamma_corr`
-5. 导入图像 → 运行仿真 → 分析结果 → 迭代修改
+3. AI 生成 RTL + TB + regdef（**金标准需手动补充**，见下节）
+4. 刷新控制台 → 导入图像 → 运行仿真
 
 **开发迭代循环**：
 
 ```mermaid
 flowchart LR
-    A["对 AI 描述需求"] --> B["AI 生成 RTL + TB + regdef"]
-    B --> C["控制台 ▶ 运行仿真"]
+    A["AI 描述需求"] --> B["gen_ip_spec.py 生成\nRTL + TB + regdef + golden"]
+    B --> C["make verify IP=&lt;ip&gt;"]
     C --> D{"金标准 PASS?"}
-    D -- 否 --> E["查看分析面板 / 波形<br/>找出问题"]
-    E --> A
+    D -- 否 --> E["修正 RTL / golden.py<br/>查看分析面板 / 波形"]
+    E --> C
     D -- 是 --> F["换大图验证 / 跑回归测试"]
+```
+
+**关于金标准的修正**：自动生成的金标准是算法模板，RTL 细节（定点位宽、截断时机、饱和逻辑）需要人工核对。核对方法：
+
+```bash
+# 对比 RTL 定点运算与 golden.py 的 Python 运算
+make verify IP=my_filter WIDTH=64 HEIGHT=48
+
+# FAIL 时查看失配位置
+# 打开 output/reports/result_<ip>.json 找 mismatch_pixels
+# 确认是定点截断误差（调 CONFIG['tol']）还是逻辑错误（修 golden.py）
 ```
 
 ---

@@ -548,6 +548,10 @@ function postToConsole(msg) {
 
 function consoleState() {
     const root = wsRoot();
+    // 无项目: 返回欢迎态, 控制台内引导新建项目 (统一入口)
+    if (!isVipProject(root)) {
+        return { mode: 'welcome', hasFolder: !!root };
+    }
     const st = getState();
     const ips = listIPs(root);
     if (!ips.includes(st.ip) && ips.length) st.ip = ips[0];
@@ -582,6 +586,7 @@ function consoleState() {
         }
     }
     return {
+        mode: 'project',
         ...st, ips,
         regdef: readRegdef(root, st.ip),
         regs: extCtx.workspaceState.get(`regs:${st.ip}`, {}),
@@ -605,15 +610,14 @@ function refreshConsole() {
 
 function cmdConsole() {
     const root = wsRoot();
-    if (!isVipProject(root)) return noProject();
-
+    // 统一入口: 有项目时载入控制台, 无项目时展示"新建项目"引导, 不再用命令面板分流
     if (consolePanel) { consolePanel.reveal(); refreshConsole(); return; }
 
     consolePanel = vscode.window.createWebviewPanel(
         'vipsimConsole', 'VIP 仿真控制台', vscode.ViewColumn.One, {
             enableScripts: true,
             retainContextWhenHidden: true,
-            localResourceRoots: [vscode.Uri.file(root)],
+            localResourceRoots: root ? [vscode.Uri.file(root)] : [],
         });
     consolePanel.onDidDispose(() => { consolePanel = undefined; });
     const persistParams = async (p) => {
@@ -624,6 +628,7 @@ function cmdConsole() {
     };
     consolePanel.webview.onDidReceiveMessage(async (m) => {
         switch (m.cmd) {
+            case 'newProject': await cmdNewProject(); break;
             case 'run': await doRun(m.params); break;
             case 'import': await importImage(); break;
             case 'importVideo': await importVideo(); break;
@@ -807,6 +812,13 @@ body{
   box-shadow:0 2px 8px rgba(124,58,237,.3);
 }
 .btn-primary:hover{box-shadow:0 4px 14px rgba(124,58,237,.4)}
+.btn-wave{
+  background:linear-gradient(135deg,#0ea5e9,#14b8a6);
+  color:#fff;font-weight:600;
+  padding:9px 22px;border-radius:8px;
+  box-shadow:0 2px 8px rgba(20,184,166,.35);
+}
+.btn-wave:hover{box-shadow:0 4px 14px rgba(20,184,166,.5)}
 .btn-sm{padding:3px 10px;font-size:0.78em}
 .btn-icon{padding:5px;border-radius:6px;min-width:unset}
 
@@ -904,6 +916,24 @@ body{padding:18px 22px;max-width:1080px;margin:0 auto}
   <div class="sub">awesom 视频处理IP · 端到端仿真验证平台</div>
 </div>
 
+<!--- 欢迎态: 无项目时引导新建 (统一入口) --->
+<div id="welcomeView" style="display:none">
+  <div class="card">
+    <div class="card-head"><span class="icon">&#x1F680;</span> 开始使用</div>
+    <div class="card-body" style="text-align:center;padding:32px 16px">
+      <p style="opacity:.7;margin-bottom:6px" id="welcomeHint">当前文件夹不是 VIP 仿真项目。</p>
+      <p style="opacity:.5;font-size:.85em;max-width:520px;margin:0 auto 22px">
+        新建一个仿真项目: 自动从内置模板复制工具链、BFM 与示例 IP, 并在项目内创建 Python 环境。
+        创建完成后将打开项目, 本控制台自动载入。
+      </p>
+      <button class="btn btn-primary" id="btnNewProject">&#x2795; 新建仿真项目</button>
+    </div>
+  </div>
+</div>
+
+<!--- 控制台主体 (有项目时显示) --->
+<div id="consoleView">
+
 <!--- 仿真参数 --->
 <div class="card">
   <div class="card-head"><span class="icon">&#x2699;</span> 仿真参数</div>
@@ -962,7 +992,7 @@ body{padding:18px 22px;max-width:1080px;margin:0 auto}
 <!--- 操作工具栏 --->
 <div class="toolbar">
   <button class="btn btn-primary" id="btnRun">&#x25B6; 运行仿真</button>
-  <button class="btn btn-secondary" id="btnWave">&#x1F4C8; 查看波形</button>
+  <button class="btn btn-wave" id="btnWave">&#x1F4C8; 查看波形</button>
 </div>
 
 <!--- 状态 & 结果 --->
@@ -1010,7 +1040,9 @@ body{padding:18px 22px;max-width:1080px;margin:0 auto}
   </div>
 </div>
 
-<div class="footer">VIP Sim v0.9.0 · awesom</div>
+</div><!--- /consoleView --->
+
+<div class="footer">VIP Sim v0.9.4 · awesom</div>
 
 <script nonce="${nonce}">
 const vscode = acquireVsCodeApi();
@@ -1085,6 +1117,8 @@ document.getElementById('btnExport').onclick =
   () => vscode.postMessage({ cmd: 'export' });
 document.getElementById('btnWave').onclick =
   () => vscode.postMessage({ cmd: 'wave' });
+document.getElementById('btnNewProject').onclick =
+  () => vscode.postMessage({ cmd: 'newProject' });
 for (const b of document.querySelectorAll('[data-p]')) {
   b.onclick = () => vscode.postMessage(
     { cmd: 'panel', id: b.dataset.p, params: params() });
@@ -1132,6 +1166,19 @@ window.addEventListener('message', (e) => {
   }
   if (m.type === 'state') {
     S = m.state;
+    // 统一入口: 欢迎态只显示新建引导, 其余控制台隐藏
+    const welcome = document.getElementById('welcomeView');
+    const consoleV = document.getElementById('consoleView');
+    if (S.mode === 'welcome') {
+      welcome.style.display = '';
+      consoleV.style.display = 'none';
+      document.getElementById('welcomeHint').textContent = S.hasFolder
+        ? '当前文件夹不是 VIP 仿真项目。'
+        : '尚未打开任何文件夹。';
+      return;
+    }
+    welcome.style.display = 'none';
+    consoleV.style.display = '';
     const sel = document.getElementById('ip');
     sel.innerHTML = '';
     for (const ip of S.ips) {
@@ -1521,6 +1568,8 @@ function activate(context) {
         vscode.commands.registerCommand('vipsim.checkEnv', cmdCheckEnv),
         vscode.commands.registerCommand('vipsim.syncEnv', cmdSyncEnv),
     );
+    // 打开的就是 VIP 项目时自动载入控制台 (统一入口, 无需手动跑命令)
+    if (isVipProject(wsRoot())) cmdConsole();
 }
 
 function deactivate() { }

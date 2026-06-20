@@ -227,6 +227,36 @@ MODELS = {
 }
 
 
+# ── 去中心化金标准发现(平台改进 #4) ─────────────────────────────────
+# 扫描 rtl/<ip>/golden.py, 动态导入并覆盖内置 MODELS/CONFIG。新 IP 只需把
+# golden.py 放到自己目录(导出 model + 可选 CONFIG)即自动接入, 无需改本公共文件。
+# 内置 MODELS/CONFIG 作为迁移期回退, 找不到对应 rtl/<ip>/golden.py 时仍可用。
+# 各 IP 模块可 `import golden` 复用 read_frame/neighbors/clamp8/final_regs 等辅助函数。
+
+def _discover_ip_models():
+    import glob
+    import importlib.util
+    import os
+    import sys
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for path in sorted(glob.glob(os.path.join(root, 'rtl', '*', 'golden.py'))):
+        ip = os.path.basename(os.path.dirname(path))
+        spec = importlib.util.spec_from_file_location(f"golden_{ip}", path)
+        mod = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+        except Exception as e:  # 单个 IP 模型出错不应拖垮整个加载
+            print(f"WARN: 加载 rtl/{ip}/golden.py 失败: {e}", file=sys.stderr)
+            continue
+        if hasattr(mod, 'model'):
+            MODELS[ip] = mod.model
+        if hasattr(mod, 'CONFIG'):
+            CONFIG[ip] = mod.CONFIG
+
+
+_discover_ip_models()
+
+
 def generate(ip, frame, frames, writes):
     model = MODELS[ip]
     return [model(frame, writes, fi, None) for fi in range(frames)]
