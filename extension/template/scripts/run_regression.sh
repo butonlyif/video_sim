@@ -8,10 +8,20 @@ PY=$(test -x .venv/bin/python && echo .venv/bin/python || echo python3)
 FAIL=0
 
 note() { echo; echo "=== $* ==="; }
-reset_regcfg() { printf 'FFFFFFFFFF\n' > sim/testdata/regcfg.hex; }
+# reset_regcfg [ip]: 按 regdef.json 的 default 生成默认 regcfg(平台改进 #1)。
+# 默认值与 RTL 复位值一致, 成为 IP 的安全初始态; 帧间类 IP 不再因空配置挂死。
+# 无 ip 或无 regdef 时退回空配置(仅哨兵), 与原行为等价。
+reset_regcfg() {
+    if [ -n "${1:-}" ] && [ -f "rtl/$1/regdef.json" ]; then
+        $PY scripts/gen_default_regcfg.py --ip "$1" \
+            -o sim/testdata/regcfg.hex > /dev/null
+    else
+        printf 'FFFFFFFFFF\n' > sim/testdata/regcfg.hex
+    fi
+}
 
 run_ip() {  # run_ip <ip> <frames> <input>
-    reset_regcfg
+    reset_regcfg "$1"
     make sim gen_output IP=$1 FRAMES=$2 INPUT_IMG=$3 WIDTH=64 HEIGHT=48 \
         2>&1 | grep -E "^PASS|^ERROR" | head -2
 }
@@ -144,7 +154,7 @@ rm -f /tmp/_bp.vvp
 
 note "4) 金标准比对 (逐字/按位)"
 gold() {  # gold <ip> <frames> <input>
-    reset_regcfg
+    reset_regcfg "$1"
     make sim IP=$1 FRAMES=$2 INPUT_IMG=$3 WIDTH=64 HEIGHT=48 >/dev/null 2>&1
     printf '  %-20s ' "$1"
     $PY scripts/verify.py --ip $1 -W 64 -H 48 --frames $2 2>&1 || FAIL=1
@@ -165,6 +175,13 @@ if [ -f sim/tests/tb_ddr_loopback.v ]; then
     rm -f /tmp/_ddr.vvp
 else
     echo "  (无 tb_ddr_loopback.v, 跳过)"
+fi
+# 可插读地址帧缓冲自检 (平台改进 #5: 几何变换类 IP 的自定义寻址通路)
+if [ -f sim/tests/tb_frame_buffer_addr.v ]; then
+    iverilog -g2012 -o /tmp/_fba.vvp sim/common/ddr_model.v \
+        sim/common/axi_frame_buffer_addr.v sim/tests/tb_frame_buffer_addr.v 2>&1 | head -3
+    vvp /tmp/_fba.vvp 2>&1 | grep -E "^PASS|^ERROR" | head -1 || FAIL=1
+    rm -f /tmp/_fba.vvp
 fi
 
 note "6) 清理临时文件"

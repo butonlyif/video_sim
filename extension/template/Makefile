@@ -8,10 +8,17 @@ PYTHON ?= $(shell test -x .venv/bin/python && echo .venv/bin/python || echo pyth
 IP ?= passthrough
 
 # 分辨率 / 格式 (日常回归用小分辨率, 见 DESIGN_SPEC.md iverilog 性能约定)
+# WIDTH/HEIGHT = 输入维度。
 WIDTH  ?= 64
 HEIGHT ?= 48
 FRAMES ?= 1
 FORMAT ?= RGB888
+
+# 输出维度 / IP 分类由 rtl/$(IP)/ip.json 推导(平台改进 #2/#3)。
+# 缺省恒等(OUT=IN) + pointwise, 现有 IP 不受影响。
+OUT_WIDTH  := $(shell $(PYTHON) scripts/ip_manifest.py --ip $(IP) --in-w $(WIDTH) --in-h $(HEIGHT) --get out_w)
+OUT_HEIGHT := $(shell $(PYTHON) scripts/ip_manifest.py --ip $(IP) --in-w $(WIDTH) --in-h $(HEIGHT) --get out_h)
+CATEGORY   := $(shell $(PYTHON) scripts/ip_manifest.py --ip $(IP) --get category)
 
 # 输入图像
 INPUT_IMG ?= sim/testdata/test_input.png
@@ -40,6 +47,13 @@ OUT_DIR    = output
 TB_PARAMS = -Ptb_$(IP).C_WIDTH=$(WIDTH) \
             -Ptb_$(IP).C_HEIGHT=$(HEIGHT) \
             -Ptb_$(IP).C_FRAMES=$(FRAMES)
+
+# 维度变换 IP: 给 sink 注入输出维度(平台改进 #2)。仅当 OUT≠IN 时注入,
+# 故其 tb 须声明 C_OUT_WIDTH/C_OUT_HEIGHT; 恒等 IP 不注入, 现有 tb 不受影响。
+ifneq ($(OUT_WIDTH)x$(OUT_HEIGHT),$(WIDTH)x$(HEIGHT))
+TB_PARAMS += -Ptb_$(IP).C_OUT_WIDTH=$(OUT_WIDTH) \
+             -Ptb_$(IP).C_OUT_HEIGHT=$(OUT_HEIGHT)
+endif
 
 # === 目标 ===
 
@@ -95,9 +109,10 @@ gen_output:
 	$(PYTHON) scripts/gen_output.py \
 	    -i $(SIM_DIR)/testdata/result.hex \
 	    -o $(OUT_DIR)/images/$(IP)_output.png \
-	    -f $(FORMAT) -W $(WIDTH) -H $(HEIGHT) --frames $(FRAMES)
+	    -f $(FORMAT) -W $(OUT_WIDTH) -H $(OUT_HEIGHT) --frames $(FRAMES)
 
-# 分析: 以 stimulus.hex 还原图为参考基准 (即 DUT 实际输入)
+# 分析: 以 stimulus.hex 还原图为参考基准 (即 DUT 实际输入, 输入维度)
+# 输出图按输出维度还原; --category 决定是否启用逐像素对齐指标(平台改进 #3)
 analyze:
 	mkdir -p $(OUT_DIR)/reports
 	$(PYTHON) scripts/gen_output.py \
@@ -108,7 +123,8 @@ analyze:
 	    --input  $(OUT_DIR)/images/$(IP)_input.png \
 	    --output $(OUT_DIR)/images/$(IP)_output.png \
 	    --report $(OUT_DIR)/reports/$(IP)_report.json \
-	    --diff   $(OUT_DIR)/images/$(IP)_diff.png
+	    --diff   $(OUT_DIR)/images/$(IP)_diff.png \
+	    --category $(CATEGORY)
 
 # 闭环自检: 直通 DUT 时输出应与激励完全一致
 check:

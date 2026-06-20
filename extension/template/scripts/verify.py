@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 import golden
+import ip_manifest
 
 
 def main():
@@ -34,17 +35,21 @@ def main():
     cfg = golden.CONFIG[args.ip]
     frames = args.frames if args.frames is not None else cfg['frames']
 
-    # 1) 金标准模型 → expected.hex
+    # -W/-H = 输入维度; 由 ip.json 算输出维度(平台改进 #2, 缺省恒等)。
+    # 模型按输入维度建模 → 输出维度比对, 支持转置/缩放等维度变换 IP。
+    out_w, out_h = ip_manifest.out_dims(args.ip, args.width, args.height)
+
+    # 1) 金标准模型 → expected.hex (按输入维度读入, 模型输出为输出维度)
     frame = golden.read_frame(args.stimulus, args.width, args.height)
     writes = golden.read_writes(args.regcfg) if os.path.exists(args.regcfg) else []
     outs = golden.generate(args.ip, frame, frames, writes)
     golden.write_frames(args.expected, outs)
 
-    # 2) 调 compare.py（独立进程，复用其退出码语义）
+    # 2) 调 compare.py（独立进程，复用其退出码语义）; 按输出维度比对
     here = os.path.dirname(os.path.abspath(__file__))
     cmd = [sys.executable, os.path.join(here, 'compare.py'),
            '--result', args.result, '--expected', args.expected,
-           '-W', str(args.width), '-H', str(args.height),
+           '-W', str(out_w), '-H', str(out_h),
            '--tolerance', str(cfg['tol']),
            '--max-mismatch-frac', str(cfg['frac'])]
     if args.json:
