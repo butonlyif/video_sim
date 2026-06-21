@@ -6,6 +6,9 @@ const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+// 平台检测: Windows 使用 .venv/Scripts, 其他使用 .venv/bin
+const isWin = process.platform === 'win32' || process.platform === 'win64' || fs.existsSync('.venv/Scripts');
+
 let extCtx;
 let out;             // OutputChannel
 let consolePanel;    // 仿真控制台 webview
@@ -27,10 +30,14 @@ function isVipProject(root) {
 function run(cmd, cwd) {
     out.appendLine(`$ ${cmd}`);
     return new Promise((resolve) => {
-        const child = cp.spawn(cmd, { shell: true, cwd });
-        child.stdout.on('data', (d) => out.append(d.toString()));
-        child.stderr.on('data', (d) => out.append(d.toString()));
-        child.on('close', resolve);
+        // Windows 用 cmd.exe /c, 其他用 sh -c
+        const shell = isWin ? 'cmd.exe' : '/bin/sh';
+        const args = isWin ? ['/c', cmd] : ['-c', cmd];
+        const child = cp.spawn(shell, args, { cwd });
+        let buf = '';
+        child.stdout.on('data', (d) => { buf += d.toString(); out.append(d.toString()); });
+        child.stderr.on('data', (d) => { buf += d.toString(); out.append(d.toString()); });
+        child.on('close', (code) => resolve(code));
     });
 }
 
@@ -143,17 +150,18 @@ async function cmdNewProject() {
 
     // 2. 创建项目内 Python 环境
     out.show(true);
+    // Windows 使用 python/.venv/Scripts, Mac/Linux 使用 python3/.venv/bin
+    const pyCmd = isWin ? 'python' : 'python3';
+    const pipCmd = isWin ? '.venv\\Scripts\\pip' : '.venv/bin/pip';
+    const venvCmd = `${pyCmd} -m venv .venv && ${pipCmd} install -q -r requirements.txt`;
     const ok = await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
         title: `创建 Python 环境 (${name}/.venv, 首次需联网下载)...`,
-    }, () => run(
-        'python3 -m venv .venv && ' +
-        '.venv/bin/pip install -q -r requirements.txt', dest));
+    }, () => run(venvCmd, dest));
     if (ok !== 0) {
         vscode.window.showWarningMessage(
             'Python 环境创建失败(可能无网络), 项目已创建。' +
-            '稍后可在项目内手动执行: python3 -m venv .venv && ' +
-            '.venv/bin/pip install -r requirements.txt');
+            `稍后可在项目内手动执行: ${pyCmd} -m venv .venv && ${pipCmd} install -r requirements.txt`);
     }
 
     const open = await vscode.window.showInformationMessage(
@@ -252,6 +260,10 @@ function runCapture(cmd, cwd) {
 }
 
 function pyExec(root) {
+    if (isWin) {
+        return fs.existsSync(path.join(root, '.venv', 'Scripts', 'python.exe'))
+            ? path.join('.venv', 'Scripts', 'python.exe') : 'python';
+    }
     return fs.existsSync(path.join(root, '.venv/bin/python'))
         ? '.venv/bin/python' : 'python3';
 }
@@ -483,8 +495,7 @@ async function genPattern() {
         PATTERNS.map((p) => p.label), { placeHolder: '选择测试图卡类型' });
     if (!pick) return;
     const p = PATTERNS.find((x) => x.label === pick);
-    const py = fs.existsSync(path.join(root, '.venv/bin/python'))
-        ? '.venv/bin/python' : 'python3';
+    const py = pyExec(root);
     const rel = path.join('sim', 'testdata', p.file);
     const baseArg = p.base ? `--base "${st.inputImage}"` : '';
     const code = await run(
@@ -506,14 +517,16 @@ async function cmdCheckEnv() {
     const check = (cmd) => new Promise((res) =>
         cp.exec(cmd, { cwd: root }, (e, so) => res(e ? null : so.trim())));
     const iv = await check('iverilog -V 2>/dev/null | head -1');
-    items.push(iv ? `✓ ${iv.split('\n')[0]}` : '✗ iverilog 未安装 (brew install icarus-verilog)');
-    const py = root && fs.existsSync(path.join(root, '.venv/bin/python'))
-        ? '.venv/bin/python' : null;
+    items.push(iv ? `✓ ${iv.split('\n')[0]}` : '✗ iverilog 未安装 (scoop install icarus-verilog)');
+    const py = root ? pyExec(root) : null;
     if (py) {
-        const ok = await check(`${py} -c "import cv2,numpy,PIL;print(cv2.__version__)"`);
+        const ok = await check(`"${py}" -c "import cv2,numpy,PIL;print(cv2.__version__)"`);
         items.push(ok ? `✓ 项目 venv + opencv ${ok}` : '✗ venv 存在但缺图像库');
     } else {
-        items.push('✗ 项目缺 .venv (python3 -m venv .venv && .venv/bin/pip install -r requirements.txt)');
+        const hint = isWin
+            ? 'python -m venv .venv && .venv\\Scripts\\pip install -r requirements.txt'
+            : 'python3 -m venv .venv && .venv/bin/pip install -r requirements.txt';
+        items.push(`✗ 项目缺 .venv (${hint})`);
     }
     items.push(fs.existsSync(path.join(root || '', 'sim/common/reg_config.v'))
         ? '✓ 环境文件含寄存器配置 BFM' : '✗ 环境文件过旧, 请运行 "VIP Sim: 同步环境文件"');

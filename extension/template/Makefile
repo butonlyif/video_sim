@@ -1,8 +1,11 @@
 # VIP 仿真验证系统 — 顶层 Makefile
 # 仿真工具: Icarus Verilog (iverilog/vvp)
 
-# 优先用项目内 venv, 不存在则退回系统 python3
-PYTHON ?= $(shell test -x .venv/bin/python && echo .venv/bin/python || echo python3)
+# Python: Windows 用 python, Mac/Linux 优先用 .venv
+PYTHON := python
+
+# OS 检测
+IS_WIN := false
 
 # IP 选择
 IP ?= passthrough
@@ -39,7 +42,8 @@ endif
 
 # 路径
 RTL_DIR    = rtl/$(IP)
-RTL_ALL    = $(shell find rtl -name '*.v')    # 包含所有子目录
+# 使用 Python glob 替代 find 命令, 兼容 Windows
+RTL_ALL    = $(shell $(PYTHON) -c "import glob; print(' '.join(glob.glob('rtl/**/*.v', recursive=True)))")
 SIM_DIR    = sim
 COMMON_DIR = $(SIM_DIR)/common
 OUT_DIR    = output
@@ -65,8 +69,9 @@ verify:
 	    --json $(OUT_DIR)/reports/$(IP)_verify.json
 
 # 全 IP 回归测试 (冒烟 + 功能性检查 + 随机反压)
+# Mac/Linux 使用 bash 脚本, Windows 使用 Python 脚本
 regression:
-	bash scripts/run_regression.sh
+	$(PYTHON) scripts/run_regression.py
 
 gen_stimulus: $(INPUT_IMG)
 	$(PYTHON) scripts/gen_stimulus.py -i $(INPUT_IMG) \
@@ -75,9 +80,8 @@ gen_stimulus: $(INPUT_IMG)
 
 sim: gen_stimulus
 	mkdir -p $(OUT_DIR)/waves
-	rm -f $(SIM_DIR)/testdata/result.hex   # 防止仿真失败时残留旧结果误导分析
-	iverilog -g2012 -o $(OUT_DIR)/$(IP).vvp $(TB_PARAMS) $(STREAM_PARAM) \
-	    $(COMMON_DIR)/*.v $(RTL_ALL) $(SIM_DIR)/tests/tb_$(IP).v
+	rm -f $(SIM_DIR)/testdata/result.hex
+	cd . && iverilog -g2012 -o $(OUT_DIR)/$(IP).vvp $(TB_PARAMS) $(STREAM_PARAM) $(COMMON_DIR)/*.v $(RTL_ALL) $(SIM_DIR)/tests/tb_$(IP).v
 	vvp $(OUT_DIR)/$(IP).vvp $(PLUSARGS)
 
 # === 视频模式 (导入MP4 → 流式逐帧仿真 → 导出MP4) ===
@@ -91,8 +95,7 @@ video_stimulus: $(INPUT_VIDEO)
 video_sim: video_stimulus
 	mkdir -p $(OUT_DIR)/waves
 	rm -f $(SIM_DIR)/testdata/result.hex
-	iverilog -g2012 -o $(OUT_DIR)/$(IP).vvp $(TB_PARAMS) -Ptb_$(IP).C_STREAM=1 \
-	    $(COMMON_DIR)/*.v $(RTL_ALL) $(SIM_DIR)/tests/tb_$(IP).v
+	cd . && iverilog -g2012 -o $(OUT_DIR)/$(IP).vvp $(TB_PARAMS) -Ptb_$(IP).C_STREAM=1 $(COMMON_DIR)/*.v $(RTL_ALL) $(SIM_DIR)/tests/tb_$(IP).v
 	vvp $(OUT_DIR)/$(IP).vvp $(PLUSARGS)
 
 video_output:
@@ -127,9 +130,10 @@ analyze:
 	    --category $(CATEGORY)
 
 # 闭环自检: 直通 DUT 时输出应与激励完全一致
+# 使用 Python diff 替代 Unix diff 命令, 兼容 Windows
 check:
-	diff $(SIM_DIR)/testdata/stimulus.hex $(SIM_DIR)/testdata/result.hex \
-	    && echo "CHECK PASS: result.hex 与 stimulus.hex 一致"
+	$(PYTHON) -c "import sys; f1=open('$(SIM_DIR)/testdata/stimulus.hex').read(); f2=open('$(SIM_DIR)/testdata/result.hex').read(); sys.exit(0 if f1==f2 else 1)"
+	@if errorlevel 1 (echo CHECK FAIL: result.hex differs from stimulus.hex) else (echo CHECK PASS: result.hex matches stimulus.hex)
 
 # 波形查看: 在 Trae/VS Code 中打开 VCD (VaporView 扩展接管)
 # 注: brew 的 gtkwave cask 已废弃, 与 macOS 14+ 不兼容
@@ -139,5 +143,4 @@ view_wave:
 all: sim gen_output analyze
 
 clean:
-	rm -rf $(OUT_DIR)/*.vvp $(OUT_DIR)/images/* $(OUT_DIR)/waves/* \
-	    $(SIM_DIR)/testdata/stimulus.hex $(SIM_DIR)/testdata/result.hex
+	rm -rf $(OUT_DIR)/$(IP).vvp $(OUT_DIR)/images $(OUT_DIR)/waves $(SIM_DIR)/testdata/stimulus.hex $(SIM_DIR)/testdata/result.hex

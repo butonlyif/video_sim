@@ -2,7 +2,7 @@
   "name": "vip-sim",
   "displayName": "VIP Sim",
   "description": "awesom VIP 仿真验证环境：一键仿真、图像对比、质量分析、波形查看",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "publisher": "awesom",
   "license": "MIT",
   "engines": {
