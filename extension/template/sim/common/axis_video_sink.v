@@ -52,7 +52,9 @@ always @(posedge aclk) begin
         frame_done <= 1'b0;
     end else begin
         frame_done <= 1'b0;
-        if (s_axis_tvalid && s_axis_tready) begin
+        // 收满一帧后停止写入/计数: 逐点 IP 在 source 冲刷阶段会多吐像素,
+        // 不能写进 result.hex (否则像素数超出 W*H*FRAMES)。
+        if (s_axis_tvalid && s_axis_tready && pixel_cnt < TOTAL_PIXELS) begin
             $fwrite(fd, "%08x\n", s_axis_tdata);
 
             // 协议检查: SOF 只应出现在帧首, EOL 只应出现在行尾

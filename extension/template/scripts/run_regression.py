@@ -20,13 +20,16 @@ def note(msg):
     print(f"\n=== {msg} ===")
 
 
-def reset_regcfg(ip=None):
-    """按 regdef.json 的 default 生成默认 regcfg(平台改进 #1)"""
+def reset_regcfg(ip=None, width=64, height=48):
+    """按 regdef.json 的 default 生成默认 regcfg(平台改进 #1)
+
+    WIDTH/HEIGHT 寄存器用回归分辨率覆盖, 使 REGCHK 与实际仿真一致。
+    """
     regcfg_path = 'sim/testdata/regcfg.hex'
     if ip and os.path.exists(f'rtl/{ip}/regdef.json'):
         subprocess.run(
             [sys.executable, 'scripts/gen_default_regcfg.py', '--ip', ip,
-             '-o', regcfg_path],
+             '-o', regcfg_path, '-W', str(width), '-H', str(height)],
             capture_output=True
         )
     else:
@@ -35,9 +38,9 @@ def reset_regcfg(ip=None):
 
 
 def run_make(args):
-    """执行 make 命令"""
+    """执行构建目标 (跨平台: 直接调 scripts/sim.py, 不依赖 make)"""
     result = subprocess.run(
-        ['make'] + args,
+        [sys.executable, 'scripts/sim.py'] + args,
         capture_output=True, text=True
     )
     return result
@@ -107,9 +110,6 @@ def functional_tests():
         print("  跳过: 需要 cv2 和 numpy")
         return
 
-    def sh(cmd):
-        return subprocess.run(cmd, shell=True, capture_output=True, text=True)
-
     def psnr(x, y):
         mse = ((x.astype(float) - y.astype(float)) ** 2).mean()
         return float('inf') if mse == 0 else 10 * np.log10(255**2 / mse)
@@ -121,8 +121,8 @@ def functional_tests():
             f.write("FFFFFFFFFF\n")
 
     def run(ip, frames, img):
-        r = sh(f'make sim gen_output IP={ip} FRAMES={frames} INPUT_IMG={img} '
-               f'WIDTH=64 HEIGHT=48')
+        r = run_make(['sim', 'gen_output', f'IP={ip}', f'FRAMES={frames}',
+                      f'INPUT_IMG={img}', 'WIDTH=64', 'HEIGHT=48'])
         assert 'PASS' in r.stdout, f"{ip} 仿真失败"
         return cv2.imread(f'output/images/{ip}_output.png')
 
@@ -152,8 +152,8 @@ def functional_tests():
     check('csc 往返', d <= 5, f"最大偏差 {d} LSB (<=5)")
 
     # dpc: 坏点校正
-    regcfg()
-    out = run('defect_pixel_corr', 1, 'sim/testdata/_defect.png')
+    reset_regcfg('dpc_3x3', 64, 48)
+    out = run('dpc_3x3', 1, 'sim/testdata/_defect.png')
     bad = cv2.imread('sim/testdata/_defect.png')
     p0, p1 = psnr(clean, bad), psnr(clean, out)
     check('dpc 坏点校正', p1 > p0 + 6, f"PSNR {p0:.1f} -> {p1:.1f} dB (+6 以上)")
@@ -208,12 +208,12 @@ def backpressure_test():
     temp_dir = os.environ.get('TEMP', '/tmp')
     vvp_file = os.path.join(temp_dir, '_bp.vvp')
 
-    for ip in ['sharpen', 'denoise', 'defect_pixel_corr']:
-        rtl_files = ' '.join(glob.glob(f'rtl/{ip}/*.v'))
+    for ip in ['sharpen', 'denoise', 'dpc_3x3']:
         ivl_result = subprocess.run(
             ['iverilog', '-g2012', '-o', vvp_file,
-             f'-Ptb_{ip}.C_READY_MODE=1',
-             'sim/common/*.v', rtl_files, f'sim/tests/tb_{ip}.v'],
+             f'-Ptb_{ip}.C_READY_MODE=1']
+            + glob.glob('sim/common/*.v') + glob.glob(f'rtl/{ip}/*.v')
+            + [f'sim/tests/tb_{ip}.v'],
             capture_output=True, text=True
         )
         if ivl_result.returncode == 0:
@@ -256,7 +256,7 @@ def golden_test():
     gold('color_space_conv', 1, 'sim/testdata/test_input.png')
     gold('sharpen', 1, 'sim/testdata/test_input.png')
     gold('denoise', 1, 'sim/testdata/_noisy.png')
-    gold('defect_pixel_corr', 1, 'sim/testdata/_defect.png')
+    gold('dpc_3x3', 1, 'sim/testdata/_defect.png')
     gold('contrast_enhance', 3, 'sim/testdata/_low.png')
     gold('auto_white_balance', 3, 'sim/testdata/test_input.png')
 

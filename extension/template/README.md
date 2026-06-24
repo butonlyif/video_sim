@@ -28,8 +28,12 @@
 
 ## 命令行用法（可选）
 
+构建编排是纯 Python（`scripts/sim.py`），**Mac / Linux / Windows 通用，无需安装 make**：
+
 ```bash
-make all IP=passthrough WIDTH=64 HEIGHT=48   # 完整流程
-make check                                    # 直通自检
-make sim WAVE=1                               # 带波形仿真
+python scripts/sim.py all IP=passthrough WIDTH=64 HEIGHT=48   # 完整流程
+python scripts/sim.py check                                    # 直通自检
+python scripts/sim.py sim WAVE=1                               # 带波形仿真
 ```
+
+Mac / Linux 上也可用等价的 `make` 封装（`make all`、`make check`、`make sim WAVE=1`）。

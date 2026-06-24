@@ -20,8 +20,12 @@ import os
 import sys
 
 
-def load_defaults(regdef_path):
-    """读 regdef.json, 返回有序的 (addr, data) RW 默认值列表。"""
+def load_defaults(regdef_path, width=None, height=None):
+    """读 regdef.json, 返回有序的 (addr, data) RW 默认值列表。
+
+    width/height 非 None 时, 按寄存器名 WIDTH/HEIGHT 覆盖其默认数据,
+    使配置与本次仿真分辨率一致 (帧间类 IP 据此正常结束, REGCHK 真实自检)。
+    """
     with open(regdef_path) as f:
         spec = json.load(f)
     entries = []
@@ -30,6 +34,12 @@ def load_defaults(regdef_path):
             continue
         addr = int(str(reg['addr']), 0) & 0xFF
         data = int(str(reg.get('default', '0x0')), 0) & 0xFFFFFFFF
+        name = str(reg.get('name', '')).upper()
+        # 子串匹配: 兼容 WIDTH / IMG_WIDTH / FRAME_WIDTH 等真实命名
+        if width is not None and 'WIDTH' in name:
+            data = width & 0xFFFFFFFF
+        elif height is not None and 'HEIGHT' in name:
+            data = height & 0xFFFFFFFF
         entries.append((addr, data))
     return entries
 
@@ -49,6 +59,10 @@ def main():
     g.add_argument('--ip', help='IP 名 (从 rtl/<ip>/regdef.json 读取)')
     g.add_argument('--regdef', help='regdef.json 路径')
     ap.add_argument('-o', '--out', default='sim/testdata/regcfg.hex')
+    ap.add_argument('-W', '--width', type=int, default=None,
+                    help='用此宽度覆盖 WIDTH 寄存器默认值 (仿真分辨率)')
+    ap.add_argument('-H', '--height', type=int, default=None,
+                    help='用此高度覆盖 HEIGHT 寄存器默认值 (仿真分辨率)')
     args = ap.parse_args()
 
     regdef = args.regdef or os.path.join('rtl', args.ip, 'regdef.json')
@@ -58,7 +72,7 @@ def main():
         print(f"OK: {args.out}  (无 {regdef}, 写入空配置)")
         return
 
-    entries = load_defaults(regdef)
+    entries = load_defaults(regdef, args.width, args.height)
     write_regcfg(args.out, entries)
     print(f"OK: {args.out}  {len(entries)} 个 RW 默认值 ← {regdef}")
 

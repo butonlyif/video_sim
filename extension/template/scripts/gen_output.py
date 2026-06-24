@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """gen_output.py — 仿真结果 hex 还原为图像
 
-读取 result.hex (每行一个 32bit hex 字, RGB888: {8'd0, R, G, B})，
-重塑为 H×W×3 图像并保存。
+读取 result.hex (每行一个 hex 字, 排布由 --format 决定, 见 pixfmt.py),
+重塑为 H×W×3 图像并保存。单通道格式 (RAW8/RAW16) 复制到三通道显示。
 """
 import argparse
 
 import cv2
 import numpy as np
 
+import pixfmt
+
 
 def main():
     ap = argparse.ArgumentParser(description="仿真结果hex转图像")
     ap.add_argument('-i', '--input', required=True, help='输入 hex 文件')
     ap.add_argument('-o', '--output', required=True, help='输出图像 (png/bmp)')
-    ap.add_argument('-f', '--format', default='RGB888', choices=['RGB888'])
+    ap.add_argument('-f', '--format', default='RGB888', choices=pixfmt.FORMATS)
     ap.add_argument('-W', '--width', type=int, required=True)
     ap.add_argument('-H', '--height', type=int, required=True)
     ap.add_argument('--frames', type=int, default=1, help='hex 中总帧数')
@@ -37,10 +39,7 @@ def main():
         raise SystemExit(f"ERROR: 帧号 {k} 超出范围 (共 {args.frames} 帧)")
     words = words[k * per_frame:(k + 1) * per_frame]
 
-    r = ((words >> 16) & 0xFF).astype(np.uint8)
-    g = ((words >> 8) & 0xFF).astype(np.uint8)
-    b = (words & 0xFF).astype(np.uint8)
-    img = np.stack([b, g, r], axis=-1).reshape(args.height, args.width, 3)
+    img = pixfmt.unpack(words, args.format, args.height, args.width)
 
     if not cv2.imwrite(args.output, img):
         raise SystemExit(f"ERROR: 无法写出图像 {args.output}")

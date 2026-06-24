@@ -2,7 +2,7 @@
   "name": "vip-sim",
   "displayName": "VIP Sim",
   "description": "awesom VIP 仿真验证环境：一键仿真、图像对比、质量分析、波形查看",
-  "version": "0.9.6",
+  "version": "1.0.0",
   "publisher": "awesom",
   "license": "MIT",
   "engines": {
@@ -20,6 +20,10 @@
       {
         "command": "vipsim.newProject",
         "title": "VIP Sim: 新建仿真项目"
+      },
+      {
+        "command": "vipsim.importProject",
+        "title": "VIP Sim: 导入已有工程并仿真"
       },
       {
         "command": "vipsim.console",

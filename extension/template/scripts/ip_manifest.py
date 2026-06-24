@@ -49,6 +49,16 @@ def category(ip):
     return c if c in CATEGORIES else 'pointwise'
 
 
+def in_format(ip, default='RGB888'):
+    """IP 输入像素格式 (激励生成用), 缺省 RGB888。"""
+    return load(ip).get('in_format', default)
+
+
+def out_format(ip, default='RGB888'):
+    """IP 输出像素格式 (结果还原用), 缺省 RGB888。"""
+    return load(ip).get('out_format', default)
+
+
 def _eval_dim(expr, in_w, in_h):
     """在仅含 in_w/in_h 的受限命名空间求值, 整数结果。"""
     if isinstance(expr, int):

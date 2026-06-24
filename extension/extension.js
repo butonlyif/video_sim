@@ -104,12 +104,20 @@ function readRegdef(root, ip, depth = 0) {
 }
 
 // 由寄存器编辑值生成 regcfg.hex (仅 RW 寄存器, 全量写入; 哨兵行结尾)
-function writeRegcfg(root, regdef, regs) {
+// width/height 给定时, 用户未手动编辑的 WIDTH/HEIGHT 寄存器用仿真分辨率覆盖默认值,
+// 使 reg_config 的读回自检 (REGCHK) 与本次仿真分辨率一致。
+function writeRegcfg(root, regdef, regs, width, height) {
     const lines = [];
     for (const r of regdef) {
         if (r.access !== 'RW') continue;
         const addr = parseInt(r.addr, 16);
-        const val = parseInt((regs && regs[r.addr]) || r.default, 16);
+        const userVal = regs && regs[r.addr];
+        const name = (r.name || '').toUpperCase();
+        let val;
+        // 子串匹配, 兼容 IMG_WIDTH 等真实命名
+        if (!userVal && name.includes('WIDTH') && width != null) val = width;
+        else if (!userVal && name.includes('HEIGHT') && height != null) val = height;
+        else val = parseInt(userVal || r.default, 16);
         if (Number.isNaN(addr) || Number.isNaN(val)) continue;
         lines.push(addr.toString(16).padStart(2, '0') +
             (val >>> 0).toString(16).padStart(8, '0'));
@@ -120,6 +128,24 @@ function writeRegcfg(root, regdef, regs) {
 }
 
 // ---------- 新建项目 ----------
+
+// 把内置模板复制到 dest 并创建项目内 venv (新建/导入工程共用)。返回 venv 是否成功。
+async function scaffoldWorkspace(dest, progressTitle) {
+    const template = path.join(extCtx.extensionPath, 'template');
+    fs.cpSync(template, dest, { recursive: true });
+    for (const d of ['output/images', 'output/reports', 'output/waves']) {
+        fs.mkdirSync(path.join(dest, d), { recursive: true });
+    }
+    out.show(true);
+    const pyCmd = isWin ? 'python' : 'python3';
+    const pipCmd = isWin ? '.venv\\Scripts\\pip' : '.venv/bin/pip';
+    const venvCmd = `${pyCmd} -m venv .venv && ${pipCmd} install -q -r requirements.txt`;
+    const ok = await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: progressTitle,
+    }, () => run(venvCmd, dest));
+    return ok === 0;
+}
 
 async function cmdNewProject() {
     const parent = await vscode.window.showOpenDialog({
@@ -141,31 +167,90 @@ async function cmdNewProject() {
         return;
     }
 
-    // 1. 从扩展内置模板复制全部仿真文件 (模板本身只读, 项目可自由修改)
-    const template = path.join(extCtx.extensionPath, 'template');
-    fs.cpSync(template, dest, { recursive: true });
-    for (const d of ['output/images', 'output/reports', 'output/waves']) {
-        fs.mkdirSync(path.join(dest, d), { recursive: true });
-    }
-
-    // 2. 创建项目内 Python 环境
-    out.show(true);
-    // Windows 使用 python/.venv/Scripts, Mac/Linux 使用 python3/.venv/bin
-    const pyCmd = isWin ? 'python' : 'python3';
-    const pipCmd = isWin ? '.venv\\Scripts\\pip' : '.venv/bin/pip';
-    const venvCmd = `${pyCmd} -m venv .venv && ${pipCmd} install -q -r requirements.txt`;
-    const ok = await vscode.window.withProgress({
-        location: vscode.ProgressLocation.Notification,
-        title: `创建 Python 环境 (${name}/.venv, 首次需联网下载)...`,
-    }, () => run(venvCmd, dest));
-    if (ok !== 0) {
+    // 从内置模板复制全部仿真文件 + 创建项目内 Python 环境
+    const ok = await scaffoldWorkspace(dest,
+        `创建 Python 环境 (${name}/.venv, 首次需联网下载)...`);
+    if (!ok) {
         vscode.window.showWarningMessage(
             'Python 环境创建失败(可能无网络), 项目已创建。' +
-            `稍后可在项目内手动执行: ${pyCmd} -m venv .venv && ${pipCmd} install -r requirements.txt`);
+            '稍后可在项目内手动重建 .venv (见 README)。');
     }
 
     const open = await vscode.window.showInformationMessage(
         `项目 ${name} 创建完成`, '在新窗口打开', '在当前窗口打开');
+    if (open) {
+        vscode.commands.executeCommand('vscode.openFolder',
+            vscode.Uri.file(dest),
+            { forceNewWindow: open === '在新窗口打开' });
+    }
+}
+
+// ---------- 导入已有工程 ----------
+// 选一个外部 RTL 工程目录 → 在其旁建独立仿真工作区(<proj>_vipsim, 不污染原工程)
+// → 自动识别其中的多个 AXI-Stream 视频 IP → 复制 RTL + 生成 TB/regdef → 打开控制台。
+async function cmdImportProject() {
+    const pick = await vscode.window.showOpenDialog({
+        canSelectFiles: false, canSelectFolders: true,
+        canSelectMany: false, openLabel: '选择要仿真的已有工程目录',
+    });
+    if (!pick) return;
+    const src = pick[0].fsPath;
+
+    // 工作区 = 工程旁的兄弟目录 <proj>_vipsim
+    const dest = path.join(path.dirname(src), path.basename(src) + '_vipsim');
+    if (fs.existsSync(dest)) {
+        const sel = await vscode.window.showWarningMessage(
+            `仿真工作区已存在: ${dest}\n是否覆盖重建?`, { modal: true }, '覆盖重建');
+        if (sel !== '覆盖重建') return;
+        fs.rmSync(dest, { recursive: true, force: true });
+    }
+
+    // 1. 搭工作区 (复制模板 + venv)
+    const venvOk = await scaffoldWorkspace(dest,
+        `创建仿真工作区 (${path.basename(dest)}/.venv, 首次需联网)...`);
+    if (!venvOk) {
+        vscode.window.showWarningMessage(
+            'Python 环境创建失败(可能无网络)。识别仍可进行(仅用标准库), ' +
+            '但运行仿真前需手动重建 .venv。');
+    }
+
+    // 2. 扫描识别 + 生成 (import_project.py 仅依赖标准库, 无 venv 也能跑)
+    const r = await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: 'VIP Sim: 扫描工程并识别 IP...',
+    }, () => runCapture(
+        `${pyExec(dest)} scripts/import_project.py --src "${src}" --json`, dest));
+
+    let info;
+    try { info = JSON.parse(r.output.trim().split('\n').pop()); }
+    catch { info = undefined; }
+    if (!info || info.error) {
+        vscode.window.showErrorMessage(
+            `导入失败: ${info ? info.error : '识别脚本无输出'} — 详见 VIP Sim 输出面板`);
+        return;
+    }
+    if (!info.ips || info.ips.length === 0) {
+        vscode.window.showWarningMessage(
+            '未在该工程发现 AXI-Stream 视频 IP (需顶层同时含 s_axis_* 与 m_axis_*)。' +
+            '工作区已创建, 仅含示例 passthrough。');
+    } else {
+        const names = info.ips.map((x) =>
+            x.module + (x.has_cfg ? '(含寄存器)' : '')).join('、');
+        const warned = info.ips.filter((x) => x.warnings && x.warnings.length).length;
+        vscode.window.showInformationMessage(
+            `识别到 ${info.ips.length} 个 IP: ${names}` +
+            (info.common_files.length ? ` · 共享子模块 ${info.common_files.length} 个` : '') +
+            ((info.data_files || []).length ? ` · 数据文件 ${info.data_files.length} 个` : '') +
+            (warned ? ` · ${warned} 个有提示(见输出面板)` : ''));
+        if ((info.missing_data || []).length) {
+            vscode.window.showWarningMessage(
+                `有 ${info.missing_data.length} 个 RTL 数据文件($readmemh)未找到, ` +
+                `需手动放入工作区: ${info.missing_data.join(', ')}`);
+        }
+    }
+
+    const open = await vscode.window.showInformationMessage(
+        `仿真工作区已就绪: ${path.basename(dest)}`, '在新窗口打开', '在当前窗口打开');
     if (open) {
         vscode.commands.executeCommand('vscode.openFolder',
             vscode.Uri.file(dest),
@@ -180,17 +265,18 @@ async function doRun(params) {
     const { ip, width, height, frames, inputImage } = params;
     await setState({ ip, width, height, frames, inputImage });
     await extCtx.workspaceState.update(`regs:${ip}`, params.regs || {});
-    writeRegcfg(root, readRegdef(root, ip), params.regs);
+    writeRegcfg(root, readRegdef(root, ip), params.regs, width, height);
     out.show(true);
 
     const video = isVideoPath(inputImage);
     postToConsole({ type: 'status', running: true,
         text: `${video ? '视频' : ''}仿真中: ${ip} ${width}x${height} x${frames}帧 ...` });
 
+    const py = pyExec(root);
     const cmd = video
-        ? `make video IP=${ip} WIDTH=${width} HEIGHT=${height} ` +
+        ? `${py} scripts/sim.py video IP=${ip} WIDTH=${width} HEIGHT=${height} ` +
           `FRAMES=${frames} INPUT_VIDEO="${inputImage}"`
-        : `make all IP=${ip} WIDTH=${width} HEIGHT=${height} ` +
+        : `${py} scripts/sim.py all IP=${ip} WIDTH=${width} HEIGHT=${height} ` +
           `FRAMES=${frames} INPUT_IMG="${inputImage}"`;
     const code = await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
@@ -206,7 +292,6 @@ async function doRun(params) {
 
     // 视频模式: 拆帧(供帧级预览/分析) + 时序分析; 跳过金标准(参考模型按 replay 假设)
     if (video) {
-        const py = pyExec(root);
         const inDir = `output/video/${ip}_in`, outDir = `output/video/${ip}_out`;
         await run(`${py} scripts/dump_frames.py -i sim/testdata/stimulus.hex ` +
             `-d ${inDir} -W ${width} -H ${height} --frames ${frames}`, root);
@@ -279,7 +364,7 @@ async function cmdViewWave() {
             location: vscode.ProgressLocation.Notification,
             title: `重跑仿真生成波形 (${st.ip})...`,
         }, () => run(
-            `make sim WAVE=1 IP=${st.ip} WIDTH=${st.width} ` +
+            `${pyExec(root)} scripts/sim.py sim WAVE=1 IP=${st.ip} WIDTH=${st.width} ` +
             `HEIGHT=${st.height} FRAMES=${st.frames} ` +
             `INPUT_IMG="${st.inputImage}"`, root));
         if (code !== 0 || !fs.existsSync(vcd)) {
@@ -514,9 +599,10 @@ async function genPattern() {
 async function cmdCheckEnv() {
     const root = wsRoot();
     const items = [];
+    // 不用 Unix 管道(2>/dev/null|head), 在 JS 侧取首行, 兼容 Windows cmd.exe
     const check = (cmd) => new Promise((res) =>
-        cp.exec(cmd, { cwd: root }, (e, so) => res(e ? null : so.trim())));
-    const iv = await check('iverilog -V 2>/dev/null | head -1');
+        cp.exec(cmd, { cwd: root }, (e, so, se) => res(e ? null : (so || se || '').trim())));
+    const iv = await check('iverilog -V');
     items.push(iv ? `✓ ${iv.split('\n')[0]}` : '✗ iverilog 未安装 (scoop install icarus-verilog)');
     const py = root ? pyExec(root) : null;
     if (py) {
@@ -642,6 +728,7 @@ function cmdConsole() {
     consolePanel.webview.onDidReceiveMessage(async (m) => {
         switch (m.cmd) {
             case 'newProject': await cmdNewProject(); break;
+            case 'importProject': await cmdImportProject(); break;
             case 'run': await doRun(m.params); break;
             case 'import': await importImage(); break;
             case 'importVideo': await importVideo(); break;
@@ -940,6 +1027,11 @@ body{padding:18px 22px;max-width:1080px;margin:0 auto}
         创建完成后将打开项目, 本控制台自动载入。
       </p>
       <button class="btn btn-primary" id="btnNewProject">&#x2795; 新建仿真项目</button>
+      <button class="btn btn-wave" id="btnImportProject" style="margin-left:10px">&#x1F4E5; 导入已有工程</button>
+      <p style="opacity:.45;font-size:.82em;max-width:520px;margin:16px auto 0">
+        已有 RTL 工程? "导入已有工程" 会在工程旁建独立仿真工作区, 自动识别其中的
+        AXI-Stream 视频 IP 并生成 Testbench, 不改动原工程。
+      </p>
     </div>
   </div>
 </div>
@@ -1055,7 +1147,7 @@ body{padding:18px 22px;max-width:1080px;margin:0 auto}
 
 </div><!--- /consoleView --->
 
-<div class="footer">VIP Sim v0.9.4 · awesom</div>
+<div class="footer">VIP Sim v0.9.8 · awesom</div>
 
 <script nonce="${nonce}">
 const vscode = acquireVsCodeApi();
@@ -1132,6 +1224,8 @@ document.getElementById('btnWave').onclick =
   () => vscode.postMessage({ cmd: 'wave' });
 document.getElementById('btnNewProject').onclick =
   () => vscode.postMessage({ cmd: 'newProject' });
+document.getElementById('btnImportProject').onclick =
+  () => vscode.postMessage({ cmd: 'importProject' });
 for (const b of document.querySelectorAll('[data-p]')) {
   b.onclick = () => vscode.postMessage(
     { cmd: 'panel', id: b.dataset.p, params: params() });
@@ -1576,6 +1670,7 @@ function activate(context) {
     context.subscriptions.push(
         out,
         vscode.commands.registerCommand('vipsim.newProject', cmdNewProject),
+        vscode.commands.registerCommand('vipsim.importProject', cmdImportProject),
         vscode.commands.registerCommand('vipsim.console', cmdConsole),
         vscode.commands.registerCommand('vipsim.viewWave', cmdViewWave),
         vscode.commands.registerCommand('vipsim.checkEnv', cmdCheckEnv),

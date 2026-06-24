@@ -9,6 +9,8 @@ module axis_video_source #(
     parameter C_HEIGHT        = 48,
     parameter C_FRAMES        = 1,
     parameter C_STREAM        = 0,   // 0=单帧replay C_FRAMES次; 1=流式读N个不同帧(视频)
+    parameter C_FLUSH         = 0,   // 帧后追加的冲刷像素数: 让有流水线延迟的 IP(行缓冲/3x3)
+                                     // 把卡在管线里的帧尾像素推出 (data=0, tuser=0, 保持行 tlast)
     parameter C_STIMULUS_FILE = "stimulus.hex"
 ) (
     input  wire                    aclk,
@@ -39,11 +41,13 @@ end
 // 当前帧内像素索引 (SOF/EOL 标记用); 数据索引: 流式=全局序号, replay=帧内序号
 wire [31:0] frame_idx = pixel_cnt % PIXELS_PER_FRAME;
 wire [31:0] data_idx  = C_STREAM ? pixel_cnt : frame_idx;
-wire        sending   = (pixel_cnt < TOTAL_PIXELS);
+wire        in_frame  = (pixel_cnt < TOTAL_PIXELS);          // 真实帧数据阶段
+wire        sending   = (pixel_cnt < TOTAL_PIXELS + C_FLUSH); // 含冲刷阶段
+wire [31:0] rd_idx    = in_frame ? data_idx : 32'd0;         // 冲刷阶段不越界读 mem
 
 assign m_axis_tvalid = aresetn && enable && sending;
-assign m_axis_tdata  = mem[data_idx];
-assign m_axis_tuser  = (frame_idx == 0);
+assign m_axis_tdata  = in_frame ? mem[rd_idx] : {C_DATA_WIDTH{1'b0}};
+assign m_axis_tuser  = in_frame && (frame_idx == 0);
 assign m_axis_tlast  = (frame_idx % C_WIDTH == C_WIDTH - 1);
 
 always @(posedge aclk) begin

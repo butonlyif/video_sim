@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """gen_stimulus.py — 图像转仿真激励 hex 文件
 
-每行一个 32bit 十六进制字，RGB888 排列: {8'd0, R[7:0], G[7:0], B[7:0]}
+每行一个 hex 字, 字宽/排布由 --format 决定 (见 pixfmt.py):
+  RGB888 32位 {8'd0,R,G,B} / RGB24 24位 {R,G,B} / RAW8 8位灰度 / RAW16 16位。
 像素顺序: 逐行, 行内从左到右。总行数 = WIDTH × HEIGHT。
 """
 import argparse
 
 import cv2
-import numpy as np
+
+import pixfmt
 
 
 def main():
     ap = argparse.ArgumentParser(description="图像转仿真激励hex")
     ap.add_argument('-i', '--input', required=True, help='输入图像 (png/bmp/jpg)')
     ap.add_argument('-o', '--output', required=True, help='输出 hex 文件')
-    ap.add_argument('-f', '--format', default='RGB888', choices=['RGB888'],
-                    help='像素格式 (当前支持 RGB888)')
+    ap.add_argument('-f', '--format', default='RGB888', choices=pixfmt.FORMATS,
+                    help='像素格式')
     ap.add_argument('-W', '--width', type=int, help='目标宽度 (缺省用原图)')
     ap.add_argument('-H', '--height', type=int, help='目标高度 (缺省用原图)')
     args = ap.parse_args()
@@ -28,13 +30,10 @@ def main():
                          interpolation=cv2.INTER_AREA)
     h, w, _ = img.shape
 
-    b = img[:, :, 0].astype(np.uint32)
-    g = img[:, :, 1].astype(np.uint32)
-    r = img[:, :, 2].astype(np.uint32)
-    words = (r << 16) | (g << 8) | b
-
+    words = pixfmt.pack(img, args.format)
+    digits = pixfmt.hex_digits(args.format)
     with open(args.output, 'w') as f:
-        f.writelines(f"{v:08x}\n" for v in words.flatten())
+        f.writelines(f"{int(v):0{digits}x}\n" for v in words)
     print(f"OK: {args.output}  {w}x{h} {args.format}  {w * h} words")
 
 

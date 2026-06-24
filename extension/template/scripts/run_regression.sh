@@ -94,8 +94,10 @@ d = np.abs(clean.astype(int) - rt.astype(int)).max()
 check('csc 往返', d <= 5, f"最大偏差 {d} LSB (≤5)")
 
 # dpc: 坏点校正
-regcfg()
-out = run('defect_pixel_corr', 1, 'sim/testdata/_defect.png')
+subprocess.run([sys.executable, 'scripts/gen_default_regcfg.py', '--ip', 'dpc_3x3',
+                '-W', '64', '-H', '48', '-o', 'sim/testdata/regcfg.hex'],
+               capture_output=True)
+out = run('dpc_3x3', 1, 'sim/testdata/_defect.png')
 bad = cv2.imread('sim/testdata/_defect.png')
 p0, p1 = psnr(clean, bad), psnr(clean, out)
 check('dpc 坏点校正', p1 > p0 + 6, f"PSNR {p0:.1f} → {p1:.1f} dB (+6 以上)")
@@ -145,7 +147,7 @@ EOF
 
 note "3) 随机反压抽测 (窗口类 IP)"
 reset_regcfg
-for ip in sharpen denoise defect_pixel_corr; do
+for ip in sharpen denoise dpc_3x3; do
     iverilog -g2012 -o /tmp/_bp.vvp -Ptb_$ip.C_READY_MODE=1 \
         sim/common/*.v rtl/$ip/*.v sim/tests/tb_$ip.v && \
     vvp /tmp/_bp.vvp | grep -E "^PASS|^ERROR" | head -1
@@ -163,7 +165,7 @@ gold gamma_corr        1 sim/testdata/test_input.png
 gold color_space_conv  1 sim/testdata/test_input.png
 gold sharpen           1 sim/testdata/test_input.png
 gold denoise           1 sim/testdata/_noisy.png
-gold defect_pixel_corr 1 sim/testdata/_defect.png
+gold dpc_3x3            1 sim/testdata/_defect.png
 gold contrast_enhance  3 sim/testdata/_low.png
 gold auto_white_balance 3 sim/testdata/test_input.png
 
