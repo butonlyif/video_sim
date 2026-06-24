@@ -2,8 +2,8 @@
 
 | 属性   | 值              |
 | ---- | -------------- |
-| 版本   | 1.1.0          |
-| 日期   | 2026-06-14     |
+| 版本   | 1.2.0          |
+| 日期   | 2026-06-24     |
 | 状态   | 已实现           |
 | 课题编号 | AWESOM-SIM-01  |
 
@@ -68,7 +68,7 @@ flowchart TB
 | 仿真引擎     | Icarus Verilog (iverilog)  | 开源、轻量、`-g2012` 支持；Verilator 列入后续扩展 |
 | 波形查看     | VaporView (IDE 内) / GTKWave | 时序调试        |
 | 图像分析     | Python + NumPy + OpenCV | PSNR/直方图/锐度 |
-| 构建系统     | Makefile            | 自动化流程       |
+| 构建系统     | Makefile            | 纯 Python 编排 (scripts/sim.py)，跨平台兼容 (Windows/macOS/Linux)；Makefile 为薄封装供 Mac/Linux 用户使用 |
 | IDE 封装    | Trae / VS Code 扩展 (.vsix) | "VIP Sim" 扩展 — 控制台 GUI、分析面板、项目脚手架 |
 
 **iverilog 性能约定**：iverilog 为解释执行，速度有限。一帧 4K 含 830 万像素，全分辨率仿真可能耗时数十分钟。因此约定：
@@ -76,6 +76,22 @@ flowchart TB
 - **日常调试 / 回归测试**：使用缩小分辨率（如 256×144 或 64×64），算法逻辑与全分辨率完全一致，gen_stimulus.py 的 `--width/--height` 直接支持缩放
 - **里程碑验证**：仅在 IP 功能稳定后跑 1~2 次全分辨率（1080p / 4K）确认行缓冲、计数器位宽等与分辨率相关的逻辑
 - **波形 dump**：默认关闭，调试时通过 `make sim WAVE=1` 开启（`$dumpvars` 受 plusargs 控制），避免 VCD 文件过大拖慢仿真
+
+### 1.4 跨平台支持
+
+本系统支持 **Windows、macOS 和 Linux** 三大平台。v1.0.1 起增加了完整的 Windows 兼容性：
+
+| 平台 | 仿真器安装 | Python | 构建系统 |
+| --- | --- | --- | --- |
+| macOS | `brew install icarus-verilog` | 系统自带或 `brew install python@3.10` | `make` 或 `python scripts/sim.py` |
+| Linux | `sudo apt install iverilog` | 系统自带 | `make` 或 `python scripts/sim.py` |
+| Windows | `scoop install icarus-verilog` | `python.org` 下载安装 | `python scripts/sim.py`（无需 make） |
+
+**Windows 兼容措施**：
+- 构建编排除依赖 GNU Make / Unix shell，改用纯 Python 实现的 `scripts/sim.py`
+- Python 虚拟环境路径自适应（Windows: `.venv\Scripts\`，Mac/Linux: `.venv/bin/`）
+- 扩展执行子进程时自动设置 `PYTHONIOENCODING=utf-8`，确保中文输出正确
+- 控制台图标在 Windows 上使用 ASCII 替代 Unicode 字符（避免 GBK 编码错误）
 
 ---
 
@@ -865,5 +881,5 @@ IP 使用。回环自检 tb_ddr_loopback 通过（读回上一帧 0 错误）。
 
 ---
 
-**文档版本**：V1.0.0  
-**最后更新**：2026-06-12  
+**文档版本**：V1.2.0  
+**最后更新**：2026-06-24  

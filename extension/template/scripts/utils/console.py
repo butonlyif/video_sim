@@ -61,16 +61,19 @@ def dim(s):      return _c(C.DIM, s)
 
 # ============================================================
 # 图标（不依赖 emoji 字体，用 ANSI + 符号替代）
+# Windows GBK 终端: 用 ASCII 替代 Unicode 字符
 # ============================================================
+import platform
+_is_windows = platform.system() == 'Windows'
 
-ICON_OK     = green("✓")
-ICON_FAIL   = red("✗")
-ICON_WARN   = yellow("⚠")
-ICON_INFO   = blue("ℹ")
-ICON_GEAR   = cyan("⚙")
-ICON_CLOCK  = dim("⏳")
-ICON_ARROW  = dim("→")
-ICON_BULLET = dim("•")
+ICON_OK     = green("[OK]" if _is_windows else "✓")
+ICON_FAIL   = red("[FAIL]" if _is_windows else "✗")
+ICON_WARN   = yellow("[WARN]" if _is_windows else "⚠")
+ICON_INFO   = blue("[INFO]" if _is_windows else "ℹ")
+ICON_GEAR   = cyan("[GEAR]" if _is_windows else "⚙")
+ICON_CLOCK  = dim("[...]" if _is_windows else "⏳")
+ICON_ARROW  = dim("->" if _is_windows else "→")
+ICON_BULLET = dim("*" if _is_windows else "•")
 
 # ============================================================
 # 终端宽度

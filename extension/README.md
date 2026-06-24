@@ -55,6 +55,8 @@ awesom VIP 仿真验证环境。扩展内置完整的仿真工具包（Python �
 
 | 版本   | 日期        | 主要变更                                           |
 | ------ | ---------- | ------------------------------------------------- |
+| v1.0.1 | 2026-06-24 | Windows 兼容性增强：Python 子进程设置 `PYTHONIOENCODING=utf-8` 解决中文输出乱码；控制台图标在 Windows 上用 ASCII 替代 Unicode（✓→[OK]）；移除命令行参数中多余引号（路径含空格/中文时被当作字面字符） |
+| v1.0.0 | 2026-06-24 | Spec 驱动代码生成 + 级联组合 IP + DPC 仿真修复 + 全文档更新 |
 | v0.9.8 | 2026-06-24 | 新增"导入已有工程"：扫描外部 RTL 工程，自动识别多个 AXI-Stream 视频 IP，在工程旁建独立工作区（不污染原工程），**贴着目标 IP 生成仿真代码**——按真实输入/输出位宽自适应像素格式（RAW8/RGB24/RGB888，支持 demosaic 跨格式）、从 RTL 解析真实寄存器映射（地址/RW-RO/默认值/说明）、补 tkeep/tstrb 接线与复位极性、拷贝 `$readmemh` 数据文件（含参数路径）、流水线 IP 帧尾自动冲刷；缺 tuser/tlast 重建帧边界、缺 tready 自由推流。实测某真实工程 13 个 IP 全端到端 PASS |
 | v0.9.7 | 2026-06-21 | 真正的 Windows 兼容：纯 Python 构建编排 `scripts/sim.py` 取代 make，消除 GNU Make 依赖与 Unix shell builtins（mkdir -p/rm -f/glob/diff/管道）；Makefile 退化为薄封装；环境自检改为不用 Unix 管道 |
 | v0.9.0 | 2026-06-14 | 控制台 GUI 美化：卡片式布局、渐变主按钮、Pill 标签、呼吸动画、双栏媒体面板、3 列分析网格、主题自适应 |

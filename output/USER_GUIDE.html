@@ -2,1011 +2,983 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>VIP 仿真验证系统 - 使用说明书</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIP 仿真验证平台 用户使用说明书</title>
 <style>
-@page {
+  /* ===== 页面设置 ===== */
+  @page {
     size: A4;
-    margin: 2.2cm 2.5cm 2.2cm 2.5cm;
+    margin: 22mm 18mm 20mm 18mm;
     @bottom-center {
-        content: "— " counter(page) " —";
-        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-        font-size: 9pt;
-        color: #999;
+      content: "VIP 仿真验证平台 · 用户使用说明书";
+      font-family: "Microsoft YaHei", sans-serif;
+      font-size: 9px;
+      color: #90A4AE;
     }
-}
+    @bottom-right {
+      content: "第 " counter(page) " 页";
+      font-family: "Microsoft YaHei", sans-serif;
+      font-size: 9px;
+      color: #90A4AE;
+    }
+  }
 
-body {
-    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", sans-serif;
-    font-size: 11pt;
-    line-height: 1.8;
-    color: #333;
-}
+  /* 封面不显示页码 */
+  @page :first {
+    margin: 0;
+    @bottom-center { content: ""; }
+    @bottom-right { content: ""; }
+  }
 
-h1 {
-    font-size: 22pt;
-    color: #1a365d;
-    border-bottom: 3px solid #3B82F6;
-    padding-bottom: 8px;
-    margin-top: 0;
-    margin-bottom: 12px;
-}
+  /* ===== 全局 ===== */
+  * { box-sizing: border-box; }
 
-h2 {
-    font-size: 16pt;
-    color: #2c5282;
-    border-bottom: 1.5px solid #93C5FD;
-    padding-bottom: 5px;
-    margin-top: 28px;
-    margin-bottom: 14px;
-}
-
-h3 {
-    font-size: 13pt;
-    color: #2d3748;
-    margin-top: 22px;
-    margin-bottom: 10px;
-}
-
-h4 {
-    font-size: 11.5pt;
-    color: #4a5568;
-    margin-top: 18px;
-    margin-bottom: 8px;
-}
-
-p {
-    margin: 8px 0;
-    text-align: justify;
-}
-
-code {
-    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-    font-size: 9.5pt;
-    background: #f7fafc;
-    padding: 2px 5px;
-    border-radius: 3px;
-    border: 1px solid #e2e8f0;
-}
-
-pre {
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 5px;
-    padding: 14px 16px;
-    overflow-x: auto;
-    font-size: 9pt;
-    line-height: 1.5;
-}
-
-pre code {
-    background: none;
-    border: none;
+  html, body {
+    margin: 0;
     padding: 0;
-}
+    font-family: "Microsoft YaHei", "微软雅黑", "SimHei", sans-serif;
+    color: #263238;
+    font-size: 14px;
+    line-height: 1.8;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 
-table {
+  /* ===== 封面页 ===== */
+  .cover {
+    height: 297mm;
+    width: 210mm;
+    background: #fff;
+    color: #1565C0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    border-top: 12px solid #1565C0;
+    border-bottom: 12px solid #1565C0;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: 60px; left: 50%; transform: translateX(-50%);
+    width: 180px; height: 4px;
+    background: #1565C0;
+  }
+  .cover .accent-bar {
+    width: 80px;
+    height: 6px;
+    background: #1565C0;
+    border-radius: 3px;
+    margin-bottom: 40px;
+  }
+  .cover .label {
+    font-size: 14px;
+    letter-spacing: 8px;
+    color: #78909C;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+  .cover h1 {
+    font-size: 42px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    text-align: center;
+    letter-spacing: 4px;
+    color: #0D47A1;
+  }
+  .cover .subtitle {
+    font-size: 24px;
+    font-weight: 400;
+    color: #546E7A;
+    margin-bottom: 100px;
+    letter-spacing: 6px;
+  }
+  .cover .meta {
+    border-top: 2px solid #1565C0;
+    border-bottom: 2px solid #1565C0;
+    padding: 24px 56px;
+    text-align: center;
+    z-index: 1;
+  }
+  .cover .meta .ver {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1565C0;
+    margin-bottom: 8px;
+  }
+  .cover .meta .date {
+    font-size: 15px;
+    color: #546E7A;
+  }
+  .cover .footer-note {
+    position: absolute;
+    bottom: 50px;
+    font-size: 12px;
+    color: #90A4AE;
+    letter-spacing: 2px;
+  }
+
+  /* ===== 正文容器 ===== */
+  .content {
+    padding: 0;
+  }
+
+  /* ===== 一级标题 h1（## 章节）===== */
+  h1 {
+    font-size: 24px;
+    color: #1565C0;
+    border-left: 6px solid #1565C0;
+    border-bottom: 2px solid #E3F2FD;
+    padding: 6px 0 10px 14px;
+    margin: 48px 0 24px 0;
+    page-break-before: always;
+    page-break-after: avoid;
+  }
+  /* 紧跟封面的第一个一级标题不分页 */
+  h1.first-chapter {
+    page-break-before: avoid;
+    margin-top: 0;
+  }
+
+  /* ===== 二级标题 h2（### 编号小节）===== */
+  h2 {
+    font-size: 18px;
+    color: #0D47A1;
+    background: #E3F2FD;
+    padding: 8px 14px;
+    border-radius: 6px;
+    margin: 32px 0 16px 0;
+    page-break-after: avoid;
+  }
+
+  /* ===== 三级标题 h3 ===== */
+  h3 {
+    font-size: 16px;
+    color: #1565C0;
+    border-left: 4px solid #64B5F6;
+    padding-left: 10px;
+    margin: 24px 0 12px 0;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin: 10px 0;
+  }
+
+  /* ===== 文档信息表 ===== */
+  .doc-info {
     width: 100%;
     border-collapse: collapse;
-    margin: 14px 0;
-    font-size: 10.5pt;
-}
+    margin: 16px 0 28px 0;
+    font-size: 13px;
+  }
+  .doc-info td {
+    border: 1px solid #CFD8DC;
+    padding: 8px 12px;
+  }
+  .doc-info td:first-child {
+    background: #E3F2FD;
+    color: #0D47A1;
+    font-weight: 600;
+    width: 30%;
+  }
 
-table th {
-    background: #EBF4FF;
-    color: #2c5282;
+  /* ===== 普通段落标签 ===== */
+  .tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1565C0;
+    background: #E3F2FD;
+    border-radius: 4px;
+    padding: 1px 8px;
+    margin-right: 6px;
+  }
+
+  /* ===== 表格 ===== */
+  table.tbl {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 16px 0;
+    font-size: 13px;
+    border: 1px solid #BBDEFB;
+    border-radius: 8px;
+    overflow: hidden;
+    page-break-inside: avoid;
+  }
+  table.tbl thead th {
+    background: #1565C0;
+    color: #fff;
     font-weight: 600;
     padding: 10px 12px;
-    border: 1px solid #BEE3F8;
     text-align: left;
-}
-
-table td {
-    padding: 8px 12px;
-    border: 1px solid #E2E8F0;
-}
-
-table tr:nth-child(even) {
-    background: #F7FAFC;
-}
-
-blockquote {
-    border-left: 4px solid #F59E0B;
-    background: #FFFBEB;
-    padding: 10px 16px;
-    margin: 12px 0;
-    color: #92400E;
-    border-radius: 0 5px 5px 0;
-}
-
-hr {
-    border: none;
-    border-top: 1px solid #E2E8F0;
-    margin: 24px 0;
-}
-
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 18px auto;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-img + p em {
-    display: block;
-    text-align: center;
-    color: #718096;
-    font-size: 10pt;
-    margin-top: 4px;
-}
-
-a {
-    color: #3B82F6;
-    text-decoration: none;
-}
-
-strong {
-    color: #1a365d;
-}
-
-em {
-    color: #4a5568;
-}
-
-/* 封面样式 */
-.cover-title {
-    text-align: center;
-    padding: 60px 0 30px 0;
-}
-
-.cover-title h1 {
+    border-bottom: 2px solid #0D47A1;
+  }
+  table.tbl tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #ECEFF1;
+  }
+  table.tbl tbody tr:nth-child(even) {
+    background: #F5FAFF;
+  }
+  table.tbl tbody tr:last-child td {
     border-bottom: none;
-    font-size: 28pt;
-    margin-bottom: 10px;
-}
+  }
 
-.cover-meta {
-    text-align: center;
-    color: #718096;
-    font-size: 10pt;
-    margin: 20px 0 40px 0;
-}
+  /* ===== 代码块 ===== */
+  pre {
+    background: #F4F6F8;
+    border-left: 4px solid #1565C0;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 16px;
+    margin: 14px 0;
+    overflow-x: auto;
+    page-break-inside: avoid;
+  }
+  pre code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #37474F;
+    white-space: pre;
+  }
+
+  /* ===== 行内代码 ===== */
+  code.inline {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px;
+    background: #E3F2FD;
+    color: #0D47A1;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ===== 引用块 ===== */
+  blockquote {
+    background: #E3F2FD;
+    border-left: 4px solid #1565C0;
+    margin: 14px 0;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    color: #37474F;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 4px 0; }
+
+  /* ===== 列表 ===== */
+  ul, ol {
+    margin: 10px 0;
+    padding-left: 24px;
+  }
+  ul li {
+    position: relative;
+    list-style: none;
+    padding-left: 4px;
+    margin: 6px 0;
+  }
+  ul li::before {
+    content: "";
+    position: absolute;
+    left: -14px;
+    top: 12px;
+    width: 6px;
+    height: 6px;
+    background: #1565C0;
+    border-radius: 50%;
+  }
+  ol {
+    list-style: decimal;
+    padding-left: 26px;
+  }
+  ol li {
+    margin: 6px 0;
+    padding-left: 4px;
+  }
+  ol li::marker {
+    color: #1565C0;
+    font-weight: 600;
+  }
+
+  /* ===== 图表替代说明 ===== */
+  .diagram-note {
+    background: #F5FAFF;
+    border: 1px dashed #64B5F6;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    color: #1565C0;
+    font-size: 13px;
+    page-break-inside: avoid;
+  }
+  .diagram-note .diagram-title {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ===== 总结句 ===== */
+  .summary {
+    background: linear-gradient(90deg, #E3F2FD 0%, #F5FAFF 100%);
+    border-left: 4px solid #1565C0;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 14px 0;
+    font-weight: 500;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ECEFF1;
+    margin: 24px 0;
+  }
+
+  strong { color: #0D47A1; }
+
+  .end-note {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 2px solid #E3F2FD;
+    color: #607D8B;
+    font-size: 13px;
+  }
 </style>
 </head>
 <body>
-<h1 id="vip">VIP 仿真验证平台 用户使用说明书</h1>
-<table>
-<thead>
-<tr>
-<th>属性</th>
-<th>值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>版本</td>
-<td>1.1.0</td>
-</tr>
-<tr>
-<td>日期</td>
-<td>2026-06-14</td>
-</tr>
-<tr>
-<td>适用系统</td>
-<td>awesom 视频处理 IP</td>
-</tr>
-<tr>
-<td>目标用户</td>
-<td>FPGA 验证工程师 / 课题学生 / IP 开发者</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="_1">一、产品简介</h2>
-<p>VIP 仿真验证平台是一套<strong>端到端视频 IP 仿真环境</strong>，以 Trae / VS Code 扩展形式交付，提供图形化控制台与命令行双入口。核心能力：</p>
-<ul>
-<li><strong>图像/视频 → 仿真激励</strong>：自动将真实图像转换为 Verilog <code>$readmemh</code> 可读的 hex 激励</li>
-<li><strong>一键仿真</strong>：iverilog 编译 + 运行 + 结果采集全自动</li>
-<li><strong>结果还原</strong>：仿真输出 hex 自动还原为图像/视频，直观查看效果</li>
-<li><strong>金标准比对</strong>：Python 参考模型按位复现 RTL 定点运算，自动判定 PASS/FAIL</li>
-<li><strong>多维度质量分析</strong>：锐度、白平衡、PSNR、直方图、Gamma 曲线，弹出独立面板</li>
-</ul>
-<p><strong>一句话总结</strong>：给一张图进去，拿到一张图出来，中间经过你的 IP，最后告诉你处理得好不好。</p>
-<hr />
-<h2 id="_2">二、安装与环境配置</h2>
-<h3 id="21">2.1 安装扩展</h3>
-<p>拿到 <code>vip-sim-0.9.5.vsix</code> 后，在终端执行：</p>
-<div class="codehilite"><pre><span></span><code>code<span class="w"> </span>--install-extension<span class="w"> </span>vip-sim-0.9.5.vsix
-</code></pre></div>
 
-<p>安装完成后<strong>重新加载 Trae / VS Code 窗口</strong>（<code>Cmd+Shift+P</code> → <code>Developer: Reload Window</code>）。</p>
-<h3 id="22">2.2 前提条件</h3>
-<table>
-<thead>
-<tr>
-<th>组件</th>
-<th>安装方式</th>
-<th>必选/可选</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>iverilog</td>
-<td><code>brew install icarus-verilog</code> (macOS) 或 <code>sudo apt install iverilog</code> (Linux)</td>
-<td><strong>必选</strong></td>
-</tr>
-<tr>
-<td>python3</td>
-<td>macOS 自带，或 <code>brew install python@3.10</code></td>
-<td><strong>必选</strong></td>
-</tr>
-<tr>
-<td>VaporView</td>
-<td>VS Code 扩展市场搜索 <code>lramseyer.vaporview</code> 安装</td>
-<td>可选（IDE 内看波形）</td>
-</tr>
-<tr>
-<td>GTKWave</td>
-<td><code>brew install gtkwave</code></td>
-<td>可选（外部看波形）</td>
-</tr>
-</tbody>
+<!-- ============ 封面页 ============ -->
+<section class="cover">
+  <div class="accent-bar"></div>
+  <div class="label">TECHNICAL DOCUMENT</div>
+  <h1>VIP 仿真验证平台</h1>
+  <div class="subtitle">用户使用说明书</div>
+  <div class="meta">
+    <div class="ver">版本 V1.2.0</div>
+    <div class="date">发布日期：2026-06-24</div>
+  </div>
+  <div class="footer-note">awesom 视频处理 IP · 端到端仿真验证平台</div>
+</section>
+
+<!-- ============ 正文 ============ -->
+<div class="content">
+
+<!-- 文档信息 -->
+<table class="doc-info">
+  <tr><td>版本</td><td>1.2.0</td></tr>
+  <tr><td>日期</td><td>2026-06-24</td></tr>
+  <tr><td>适用系统</td><td>awesom 视频处理 IP</td></tr>
+  <tr><td>目标用户</td><td>FPGA 验证工程师 / 课题学生 / IP 开发者</td></tr>
 </table>
-<h3 id="23">2.3 验证环境</h3>
+
+<!-- ===== 一、产品简介 ===== -->
+<h1 class="first-chapter">一、产品简介</h1>
+
+<p>VIP 仿真验证平台是一套<strong>端到端视频 IP 仿真环境</strong>，以 Trae / VS Code 扩展形式交付，提供图形化控制台与命令行双入口。核心能力：</p>
+
+<ul>
+  <li><strong>图像/视频 → 仿真激励</strong>：自动将真实图像转换为 Verilog <code class="inline">$readmemh</code> 可读的 hex 激励</li>
+  <li><strong>一键仿真</strong>：iverilog 编译 + 运行 + 结果采集全自动</li>
+  <li><strong>结果还原</strong>：仿真输出 hex 自动还原为图像/视频，直观查看效果</li>
+  <li><strong>金标准比对</strong>：Python 参考模型按位复现 RTL 定点运算，自动判定 PASS/FAIL</li>
+  <li><strong>多维度质量分析</strong>：锐度、白平衡、PSNR、直方图、Gamma 曲线，弹出独立面板</li>
+</ul>
+
+<div class="summary"><strong>一句话总结</strong>：给一张图进去，拿到一张图出来，中间经过你的 IP，最后告诉你处理得好不好。</div>
+
+<!-- ===== 二、安装与环境配置 ===== -->
+<h1>二、安装与环境配置</h1>
+
+<h2>2.1 安装扩展</h2>
+
+<p>拿到 <code class="inline">vip-sim-1.0.1.vsix</code> 后，在终端执行：</p>
+
+<pre><code>code --install-extension vip-sim-1.0.1.vsix</code></pre>
+
+<p>安装完成后<strong>重新加载 Trae / VS Code 窗口</strong>（<code class="inline">Cmd+Shift+P</code> → <code class="inline">Developer: Reload Window</code>）。</p>
+
+<h2>2.2 前提条件</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>组件</th><th>安装方式</th><th>必选/可选</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>iverilog</td>
+      <td><code class="inline">brew install icarus-verilog</code> (macOS) 或 <code class="inline">sudo apt install iverilog</code> (Linux) 或 <code class="inline">scoop install icarus-verilog</code> (Windows)</td>
+      <td><strong>必选</strong></td>
+    </tr>
+    <tr>
+      <td>python3</td>
+      <td>macOS 自带，或 <code class="inline">brew install python@3.10</code>，或 <code class="inline">python.org</code> 下载安装 (Windows)</td>
+      <td><strong>必选</strong></td>
+    </tr>
+    <tr>
+      <td>VaporView</td>
+      <td>VS Code 扩展市场搜索 <code class="inline">lramseyer.vaporview</code> 安装</td>
+      <td>可选（IDE 内看波形）</td>
+    </tr>
+    <tr>
+      <td>GTKWave</td>
+      <td><code class="inline">brew install gtkwave</code> 或 <code class="inline">scoop install gtkwave</code> (Windows)</td>
+      <td>可选（外部看波形）</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p><strong>说明</strong>：在 Windows 上无需安装 GNU Make，构建编排使用纯 Python 的 <code class="inline">scripts/sim.py</code>。</p>
+</blockquote>
+
+<h2>2.3 验证环境</h2>
+
 <p>打开终端，运行环境自检脚本：</p>
-<div class="codehilite"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;=== 环境自检 ===&quot;</span>
-<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;Python: &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>--version
-<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;OpenCV: &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import cv2; print(cv2.__version__)&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
-<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;NumPy:  &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import numpy; print(numpy.__version__)&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
-<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;Pillow: &quot;</span><span class="p">;</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import PIL; print(PIL.__version__)&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
-<span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;iverilog: &quot;</span><span class="p">;</span><span class="w"> </span>iverilog<span class="w"> </span>-V<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;未安装&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;=== 自检完成 ===&quot;</span>
-</code></pre></div>
+
+<pre><code>echo "=== 环境自检 ==="
+echo -n "Python: "; python3 --version
+echo -n "OpenCV: "; python3 -c "import cv2; print(cv2.__version__)" 2>/dev/null || echo "未安装"
+echo -n "NumPy:  "; python3 -c "import numpy; print(numpy.__version__)" 2>/dev/null || echo "未安装"
+echo -n "Pillow: "; python3 -c "import PIL; print(PIL.__version__)" 2>/dev/null || echo "未安装"
+echo -n "iverilog: "; iverilog -V 2>/dev/null | head -1 || echo "未安装"
+echo "=== 自检完成 ==="</code></pre>
+
+<p><strong>Windows 用户</strong>：可直接在控制台中点击「环境自检」按钮，或运行 <code class="inline">python -c "import cv2,numpy,PIL;print('OK')"</code> 和 <code class="inline">iverilog -V</code>。</p>
 
 <p>预期输出：</p>
-<div class="codehilite"><pre><span></span><code>Python: Python 3.11.5
+
+<pre><code>Python: Python 3.11.5
 OpenCV: 4.9.0
 NumPy:  1.26.4
 Pillow: 10.2.0
-iverilog: Icarus Verilog version 12.0 (stable)
-</code></pre></div>
+iverilog: Icarus Verilog version 12.0 (stable)</code></pre>
 
 <blockquote>
-<p><strong>注意</strong>：Python 依赖包（opencv/numpy/pillow）无需手动安装。扩展在创建项目时会自动创建 <code>.venv</code> 并安装全部依赖。</p>
+  <p><strong>注意</strong>：Python 依赖包（opencv/numpy/pillow）无需手动安装。扩展在创建项目时会自动创建 <code class="inline">.venv</code> 并安装全部依赖。</p>
 </blockquote>
-<hr />
-<h2 id="_3">三、系统架构</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">flowchart</span><span class="w"> </span><span class="n">TB</span>
-<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="n">GUI</span><span class="o">[</span><span class="n">&quot;Trae IDE — VIP Sim 控制台&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">PARAM</span><span class="o">[</span><span class="n">&quot;⚙ 仿真参数&lt;br/&gt;IP / 分辨率 / 帧数&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">REG</span><span class="o">[</span><span class="n">&quot;📋 寄存器编辑&lt;br/&gt;regdef.json → 表单&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">MEDIA</span><span class="o">[</span><span class="n">&quot;🖼 媒体导入&lt;br/&gt;图像 / 视频 / 图卡 / 预处理&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">TOOL</span><span class="o">[</span><span class="n">&quot;▶ 一键运行&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">ANA</span><span class="o">[</span><span class="n">&quot;📊 6 维度分析面板&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">WAVE</span><span class="o">[</span><span class="n">&quot;📈 波形&quot;</span><span class="o">]</span>
-<span class="w">    </span><span class="k">end</span>
 
-<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="n">Python</span><span class="o">[</span><span class="n">&quot;Python 工具链&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">GS</span><span class="o">[</span><span class="n">&quot;gen_stimulus.py&lt;br/&gt;图像→像素hex&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">GR</span><span class="o">[</span><span class="n">&quot;gen_pattern.py&lt;br/&gt;图卡 / 噪声 / 坏点&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="k">GO</span><span class="o">[</span><span class="n">&quot;gen_output.py&lt;br/&gt;hex→图像/视频&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">GM</span><span class="o">[</span><span class="n">&quot;golden.py&lt;br/&gt;金标准参考模型&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">CP</span><span class="o">[</span><span class="n">&quot;compare.py&lt;br/&gt;逐字比对&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">AZ</span><span class="o">[</span><span class="n">&quot;analyze.py&lt;br/&gt;质量分析报告&quot;</span><span class="o">]</span>
-<span class="w">    </span><span class="k">end</span>
+<!-- ===== 三、系统架构 ===== -->
+<h1>三、系统架构</h1>
 
-<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="n">Verilog</span><span class="o">[</span><span class="n">&quot;Verilog 仿真层&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">SRC</span><span class="o">[</span><span class="n">&quot;axis_video_source&lt;br/&gt;AXI-Stream BFM&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">REGB</span><span class="o">[</span><span class="n">&quot;reg_config&lt;br/&gt;寄存器 BFM&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">DUT</span><span class="o">[</span><span class="n">&quot;DUT&lt;br/&gt;IP Core&quot;</span><span class="o">]</span>
-<span class="w">        </span><span class="n">SNK</span><span class="o">[</span><span class="n">&quot;axis_video_sink&lt;br/&gt;结果采集 BFM&quot;</span><span class="o">]</span>
-<span class="w">    </span><span class="k">end</span>
+<div class="diagram-note">
+  <span class="diagram-title">［系统架构图］</span>
+  平台分为三层：<strong>Trae IDE 控制台层</strong>（仿真参数、寄存器编辑、媒体导入、一键运行、分析面板、波形）通过 spawn 子进程调用 <strong>Python 工具链层</strong>（gen_stimulus / gen_pattern / gen_output / golden / compare / analyze），Python 与 <strong>Verilog 仿真层</strong>（axis_video_source 激励源 BFM、reg_config 寄存器 BFM、DUT IP Core、axis_video_sink 结果采集 BFM）之间通过 hex 文本文件桥接。最终 result.hex 回传 Python 还原为图像/报告，再回传控制台展示。
+</div>
 
-<span class="w">    </span><span class="n">GUI</span><span class="w"> </span><span class="c1">--&gt;|spawn 子进程| Python</span>
-<span class="w">    </span><span class="n">Python</span><span class="w"> </span><span class="c1">-- &quot;stimulus.hex / header.hex / regcfg.hex&quot; --&gt; SRC</span>
-<span class="w">    </span><span class="n">Python</span><span class="w"> </span><span class="c1">-- &quot;regcfg.hex&quot; --&gt; REGB</span>
-<span class="w">    </span><span class="n">SRC</span><span class="w"> </span><span class="c1">--&gt; DUT --&gt; SNK</span>
-<span class="w">    </span><span class="n">REGB</span><span class="w"> </span><span class="c1">--&gt; DUT</span>
-<span class="w">    </span><span class="n">SNK</span><span class="w"> </span><span class="c1">--&gt;|result.hex| Python</span>
-<span class="w">    </span><span class="n">Python</span><span class="w"> </span><span class="c1">-- &quot;output.png / report.json&quot; --&gt; GUI</span>
-</code></pre></div>
+<h2>3.1 数据桥接</h2>
 
-<h3 id="31">3.1 数据桥接</h3>
 <p>Python 与 Verilog 之间通过 <strong>hex 文本文件</strong> 桥接：</p>
-<table>
-<thead>
-<tr>
-<th>文件</th>
-<th>方向</th>
-<th>内容</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>stimulus.hex</td>
-<td>Python → 仿真</td>
-<td>32bit hex 像素数据</td>
-</tr>
-<tr>
-<td>header.hex</td>
-<td>Python → 仿真</td>
-<td>分辨率、格式、帧数元数据</td>
-</tr>
-<tr>
-<td>regcfg.hex</td>
-<td>Python → 仿真</td>
-<td>寄存器地址与写入值序列</td>
-</tr>
-<tr>
-<td>result.hex</td>
-<td>仿真 → Python</td>
-<td>32bit hex 输出像素数据</td>
-</tr>
-<tr>
-<td>expected.hex</td>
-<td>Python → 仿真</td>
-<td>金标准期望输出（用于比对）</td>
-</tr>
-<tr>
-<td><code>*_report.json</code></td>
-<td>Python → 控制台</td>
-<td>质量分析报告（各面板的数据源）</td>
-</tr>
-</tbody>
+
+<table class="tbl">
+  <thead>
+    <tr><th>文件</th><th>方向</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code class="inline">stimulus.hex</code></td><td>Python → 仿真</td><td>32bit hex 像素数据</td></tr>
+    <tr><td><code class="inline">header.hex</code></td><td>Python → 仿真</td><td>分辨率、格式、帧数元数据</td></tr>
+    <tr><td><code class="inline">regcfg.hex</code></td><td>Python → 仿真</td><td>寄存器地址与写入值序列</td></tr>
+    <tr><td><code class="inline">result.hex</code></td><td>仿真 → Python</td><td>32bit hex 输出像素数据</td></tr>
+    <tr><td><code class="inline">expected.hex</code></td><td>Python → 仿真</td><td>金标准期望输出（用于比对）</td></tr>
+    <tr><td><code class="inline">*_report.json</code></td><td>Python → 控制台</td><td>质量分析报告（各面板的数据源）</td></tr>
+  </tbody>
 </table>
-<h3 id="32">3.2 支持的像素格式</h3>
-<table>
-<thead>
-<tr>
-<th>格式 ID</th>
-<th>名称</th>
-<th>每像素位宽</th>
-<th>tdata 对应 Verilog 排列</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>3</td>
-<td>RGB888</td>
-<td>24 bit</td>
-<td><code>{8'd0, R[7:0], G[7:0], B[7:0]}</code></td>
-</tr>
-</tbody>
+
+<h2>3.2 支持的像素格式</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>格式 ID</th><th>名称</th><th>每像素位宽</th><th>tdata 对应 Verilog 排列</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>3</td><td>RGB888</td><td>24 bit</td><td><code class="inline">{8'd0, R[7:0], G[7:0], B[7:0]}</code></td></tr>
+  </tbody>
 </table>
+
 <blockquote>
-<p>目前主要支持 RGB888。RAW8/10/12、YUV422/444 格式在 Python 工具链中已定义，但 Verilog BFM 侧以 RGB888 为主力格式。</p>
+  <p>目前主要支持 RGB888。RAW8/10/12、YUV422/444 格式在 Python 工具链中已定义，但 Verilog BFM 侧以 RGB888 为主力格式。</p>
 </blockquote>
-<hr />
-<h2 id="trae">四、Trae 扩展使用（推荐入口）</h2>
-<h3 id="41">4.1 统一入口：仿真控制台</h3>
-<p><strong>只需记住一个入口</strong> —— <code>Cmd+Shift+P</code> → <code>VIP Sim: 打开仿真控制台</code>，控制台会根据当前工作区自动切换两种形态：</p>
+
+<!-- ===== 四、Trae 扩展使用 ===== -->
+<h1>四、Trae 扩展使用（推荐入口）</h1>
+
+<h2>4.1 统一入口：仿真控制台</h2>
+
+<p><strong>只需记住一个入口</strong> —— <code class="inline">Ctrl+Shift+P</code> (Windows) / <code class="inline">Cmd+Shift+P</code> (Mac) → <code class="inline">VIP Sim: 打开仿真控制台</code>，控制台会根据当前工作区自动切换两种形态：</p>
+
 <ul>
-<li><strong>已是仿真项目</strong> → 直接载入控制台，自动识别该项目的 IP / 寄存器 / 输入输出（无需手动导入）。打开一个仿真项目文件夹时，控制台还会<strong>自动弹出</strong>。</li>
-<li><strong>不是仿真项目（或未打开文件夹）</strong> → 控制台显示「开始使用」引导页，点击 <strong>➕ 新建仿真项目</strong> 即可在同一界面内创建项目，无需另跑命令。</li>
+  <li><strong>已是仿真项目</strong> → 直接载入控制台，自动识别该项目的 IP / 寄存器 / 输入输出（无需手动导入）。打开一个仿真项目文件夹时，控制台还会<strong>自动弹出</strong>。</li>
+  <li><strong>不是仿真项目（或未打开文件夹）</strong> → 控制台显示「开始使用」引导页，点击 <strong>➕ 新建仿真项目</strong> 即可在同一界面内创建项目，无需另跑命令。</li>
 </ul>
-<div class="codehilite"><pre><span></span><code><span class="n">flowchart</span><span class="w"> </span><span class="n">LR</span>
-<span class="w">  </span><span class="n">A</span><span class="p">[</span><span class="err">打开仿真控制台</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span><span class="p">{</span><span class="err">当前是仿真项目</span><span class="o">?</span><span class="p">}</span>
-<span class="w">  </span><span class="n">B</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="err">是</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span><span class="p">[</span><span class="err">载入控制台</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="err">自动导入项目</span><span class="p">]</span>
-<span class="w">  </span><span class="n">B</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="err">否</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">D</span><span class="p">[</span><span class="err">开始使用引导页</span><span class="p">]</span>
-<span class="w">  </span><span class="n">D</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="err">点击新建</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">E</span><span class="p">[</span><span class="err">选位置</span><span class="o">/</span><span class="err">起名</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="err">复制模板</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="err">建</span><span class="w"> </span><span class="n">venv</span><span class="p">]</span>
-<span class="w">  </span><span class="n">E</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">F</span><span class="p">[</span><span class="err">打开项目</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span>
-</code></pre></div>
 
-<p>新建项目时扩展自动完成：
-1. 复制完整仿真环境到新目录（Python 脚本 / Verilog BFM / Makefile / 示例 DUT）
-2. 创建项目内 Python 虚拟环境 <code>.venv</code>，安装 opencv/numpy/pillow
-3. 打开项目（控制台随之自动载入）</p>
+<div class="diagram-note">
+  <span class="diagram-title">［控制台入口流程图］</span>
+  打开仿真控制台 → 判断当前是否为仿真项目：若是，则自动载入控制台并导入项目；若否，进入「开始使用」引导页，点击新建后选择位置/起名 → 复制模板 → 建 venv → 打开项目 → 载入控制台。
+</div>
+
+<p>新建项目时扩展自动完成：</p>
+<ol>
+  <li>复制完整仿真环境到新目录（Python 脚本 / Verilog BFM / Makefile / 示例 DUT）</li>
+  <li>创建项目内 Python 虚拟环境 <code class="inline">.venv</code>，安装 opencv/numpy/pillow</li>
+  <li>打开项目（控制台随之自动载入）</li>
+</ol>
+
 <blockquote>
-<p><code>VIP Sim: 新建仿真项目</code> 命令仍保留，等价于引导页的「新建」按钮；日常只用「打开仿真控制台」一个入口即可。</p>
+  <p><code class="inline">VIP Sim: 新建仿真项目</code> 命令仍保留，等价于引导页的「新建」按钮；日常只用「打开仿真控制台」一个入口即可。</p>
 </blockquote>
-<h3 id="42">4.2 控制台布局</h3>
-<div class="codehilite"><pre><span></span><code>┌─ 🎬 VIP 仿真控制台 ────────────────────────┐
-│  awesom 视频处理IP · 端到端仿真验证平台        │
-└──────────────────────────────────────────────┘
 
-┌─ ⚙ 仿真参数 ────────────────────────────────┐
-│  目标 IP: [passthrough ▼]  宽: 64  高: 48  帧数: 1 │
-└──────────────────────────────────────────────┘
+<h2>4.2 控制台布局</h2>
 
-┌─ 📋 寄存器配置 ──仿真开始时写入 DUT───────────┐
-│  地址    名称   访问   值          说明         │
-│  0x04    CTRL  RW   [0x00000001]  bit0=使能...  │
-│  ...                                       │
-│  可写(RW)寄存器可编辑 · 只读(RO)仅展示复位值       │
-│  [↺ 恢复缺省值]                              │
-└──────────────────────────────────────────────┘
+<div class="diagram-note">
+  <span class="diagram-title">［仿真控制台布局示意］</span>
+  控制台自上而下分为五个区域：<strong>① 标题栏</strong>（🎬 VIP 仿真控制台 · awesom 视频处理IP · 端到端仿真验证平台）；<strong>② 仿真参数区</strong>（目标 IP 下拉、宽、高、帧数）；<strong>③ 寄存器配置区</strong>（仿真开始时写入 DUT，RW 寄存器可编辑、RO 仅展示复位值，含恢复缺省值按钮）；<strong>④ 媒体输入/输出区</strong>（左侧输入：导入图像/视频、生成图卡、预处理；右侧仿真输出：缩略图、导出图像）；<strong>⑤ 操作与分析区</strong>（▶ 运行仿真、📈 查看波形，以及结果分析按钮：📷图像对比、🔥差异热力图、🔍锐度、🌡白平衡、📊直方图、📡PSNR）。
+</div>
 
-┌─ 🖼 媒体输入/输出 ────────────────────────────┐
-│  ┌─ 输入 ─┐          ┌─ 仿真输出 ─┐           │
-│  │ [缩略图] │          │ [缩略图]    │           │
-│  │ 📂导入图像│          │ 💾导出图像   │           │
-│  │ 🎬导入视频│          └────────────┘           │
-│  │ 🎨生成图卡│                                  │
-│  │ ⚔预处理  │                                  │
-│  └──────────┘                                  │
-└──────────────────────────────────────────────┘
+<h2>4.3 全部命令速查</h2>
 
-  [▶ 运行仿真]                             [📈 查看波形]
-
-  结果分析: [📷图像对比] [🔥差异热力图] [🔍锐度] [🌡白平衡] [📊直方图] [📡PSNR]
-</code></pre></div>
-
-<h3 id="43">4.3 全部命令速查</h3>
-<table>
-<thead>
-<tr>
-<th>命令</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>VIP Sim: 打开仿真控制台 <strong>（统一入口）</strong></td>
-<td>主 GUI；有项目则自动载入，无项目则引导新建</td>
-</tr>
-<tr>
-<td>VIP Sim: 新建仿真项目</td>
-<td>复制完整工具包到新目录并创建 venv（等价于控制台引导页的「新建」按钮）</td>
-</tr>
-<tr>
-<td>VIP Sim: 查看波形</td>
-<td>IDE 内打开本次仿真 VCD</td>
-</tr>
-<tr>
-<td>VIP Sim: 环境自检</td>
-<td>检查 iverilog / venv / 环境文件版本</td>
-</tr>
-<tr>
-<td>VIP Sim: 同步环境文件到当前项目</td>
-<td>扩展升级后更新老项目的 BFM / 脚本 / 规则</td>
-</tr>
-</tbody>
+<table class="tbl">
+  <thead>
+    <tr><th>命令</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>VIP Sim: 打开仿真控制台 <strong>（统一入口）</strong></td><td>主 GUI；有项目则自动载入，无项目则引导新建</td></tr>
+    <tr><td>VIP Sim: 新建仿真项目</td><td>复制完整工具包到新目录并创建 venv（等价于控制台引导页的「新建」按钮）</td></tr>
+    <tr><td>VIP Sim: 查看波形</td><td>IDE 内打开本次仿真 VCD</td></tr>
+    <tr><td>VIP Sim: 环境自检</td><td>检查 iverilog / venv / 环境文件版本</td></tr>
+    <tr><td>VIP Sim: 同步环境文件到当前项目</td><td>扩展升级后更新老项目的 BFM / 脚本 / 规则</td></tr>
+  </tbody>
 </table>
-<h3 id="44-gui">4.4 GUI 操作要点</h3>
-<p><strong>导入图像</strong>：弹出文件对话框选取 PNG/BMP/JPG，自动复制到 <code>sim/testdata/</code> 并设为激励源。</p>
-<p><strong>生成图卡</strong>：弹出 9 种内置测试图卡：
-- 灰阶渐变（测试 Gamma / 对比度）
-- 彩条（测试色彩空间转换）
-- 低对比度图（测试对比度增强）
-- 棋盘格（测试边界对齐）
-- 灰卡·6500K / 3000K / 8500K（测试白平衡）
-- 噪声注入 + 坏点注入（基于当前图）</p>
+
+<h2>4.4 GUI 操作要点</h2>
+
+<p><strong>导入图像</strong>：弹出文件对话框选取 PNG/BMP/JPG，自动复制到 <code class="inline">sim/testdata/</code> 并设为激励源。</p>
+
+<p><strong>生成图卡</strong>：弹出 9 种内置测试图卡：</p>
+<ul>
+  <li>灰阶渐变（测试 Gamma / 对比度）</li>
+  <li>彩条（测试色彩空间转换）</li>
+  <li>低对比度图（测试对比度增强）</li>
+  <li>棋盘格（测试边界对齐）</li>
+  <li>灰卡·6500K / 3000K / 8500K（测试白平衡）</li>
+  <li>噪声注入 + 坏点注入（基于当前图）</li>
+</ul>
+
 <p><strong>预处理</strong>：在仿真前对输入图像施加算子：高斯噪声 / 坏点注入 / 高斯模糊 / 组合 / 自定义（AI 生成）</p>
-<p><strong>寄存器编辑</strong>：控制台自动读取 <code>rtl/&lt;IP&gt;/regdef.json</code>，RW 寄存器显示为可编辑输入框，RO 寄存器灰显缺省值。点击运行时会按当前编辑值生成 <code>regcfg.hex</code> 写入仿真。</p>
-<p><strong>寄存器读写自检</strong>：仿真不是把表单值"写下去就算"。视频流启动前，<code>reg_config</code> BFM 会先逐条写入寄存器，再<strong>逐个回读比对</strong>，用逻辑实跑一遍寄存器读/写时序，在输出面板打印 <code>REGCHK PASS/FAIL</code>（失配给出 <code>@addr/写/读</code> 明细），确认 IP 寄存器接口正确后才放行像素数据。</p>
-<p><strong>运行仿真</strong>：一键串行执行 <code>gen_stimulus → gen_header → iverilog 编译 → vvp 运行（先寄存器配置+自检，再视频流）→ gen_output → analyze</code>。</p>
+
+<p><strong>寄存器编辑</strong>：控制台自动读取 <code class="inline">rtl/&lt;IP&gt;/regdef.json</code>，RW 寄存器显示为可编辑输入框，RO 寄存器灰显缺省值。点击运行时会按当前编辑值生成 <code class="inline">regcfg.hex</code> 写入仿真。</p>
+
+<p><strong>寄存器读写自检</strong>：仿真不是把表单值"写下去就算"。视频流启动前，<code class="inline">reg_config</code> BFM 会先逐条写入寄存器，再<strong>逐个回读比对</strong>，用逻辑实跑一遍寄存器读/写时序，在输出面板打印 <code class="inline">REGCHK PASS/FAIL</code>（失配给出 <code class="inline">@addr/写/读</code> 明细），确认 IP 寄存器接口正确后才放行像素数据。</p>
+
+<p><strong>运行仿真</strong>：一键串行执行 <code class="inline">gen_stimulus → gen_header → iverilog 编译 → vvp 运行（先寄存器配置+自检，再视频流）→ gen_output → analyze</code>。</p>
+
 <p><strong>分析面板</strong>：6 个按钮各对应一个独立 Webview 面板，可同时打开多面板对比查看。</p>
-<hr />
-<h2 id="_4">五、典型使用场景</h2>
-<h3 id="1">场景 1：单帧图像仿真（最常用）</h3>
+
+<!-- ===== 五、典型使用场景 ===== -->
+<h1>五、典型使用场景</h1>
+
+<h3>场景 1：单帧图像仿真（最常用）</h3>
+
 <p><strong>适用 IP</strong>：色彩空间转换、Gamma 校正、坏点校正、降噪、锐化、对比度增强</p>
+
 <p><strong>操作步骤</strong>：</p>
 <ol>
-<li>控制台中导入一张测试图像（建议 640×480，日常调试用小分辨率）</li>
-<li>选择目标 IP，设好分辨率</li>
-<li>编辑寄存器值（如 Gamma 系数 <code>0x04=0x00000003</code> 表示 bypass 模式）</li>
-<li>点击 <strong>▶ 运行仿真</strong></li>
-<li>仿真完成后查看输出缩略图 → 点击分析按钮看各项指标</li>
+  <li>控制台中导入一张测试图像（建议 640×480，日常调试用小分辨率）</li>
+  <li>选择目标 IP，设好分辨率</li>
+  <li>编辑寄存器值（如 Gamma 系数 <code class="inline">0x04=0x00000003</code> 表示 bypass 模式）</li>
+  <li>点击 <strong>▶ 运行仿真</strong></li>
+  <li>仿真完成后查看输出缩略图 → 点击分析按钮看各项指标</li>
 </ol>
+
 <p><strong>控制台输出示例</strong>（金标准 PASS 时）：</p>
-<div class="codehilite"><pre><span></span><code>🔧 寄存器自检  REGCHK PASS  2/2 读回一致（写后回读比对）
+
+<pre><code>🔧 寄存器自检  REGCHK PASS  2/2 读回一致（写后回读比对）
 📋 金标准  PASS  逐位精确，0 个像素失配
-📊 质量分析  PSNR 42.3 dB · 640×480
-</code></pre></div>
+📊 质量分析  PSNR 42.3 dB · 640×480</code></pre>
 
 <p><strong>命令行等价操作</strong>：</p>
-<div class="codehilite"><pre><span></span><code>make<span class="w"> </span>all<span class="w"> </span><span class="nv">IP</span><span class="o">=</span>gamma_corr<span class="w"> </span><span class="nv">WIDTH</span><span class="o">=</span><span class="m">640</span><span class="w"> </span><span class="nv">HEIGHT</span><span class="o">=</span><span class="m">480</span><span class="w"> </span><span class="nv">INPUT_IMG</span><span class="o">=</span>sim/testdata/input.png
-</code></pre></div>
 
-<hr />
-<h3 id="2-ipvibe-coding">场景 2：从零开发新 IP（Vibe Coding 流程）</h3>
+<pre><code>make all IP=gamma_corr WIDTH=640 HEIGHT=480 INPUT_IMG=sim/testdata/input.png</code></pre>
+
+<hr>
+
+<h3>场景 2：从零开发新 IP（Vibe Coding 流程）</h3>
+
 <p><strong>适用场景</strong>：用户拿到项目后，手头没有 IP 代码，通过 AI 生成。</p>
+
 <p><strong>推荐方式 — Spec 驱动</strong>（RTL 和金标准同时生成，天然一致）：</p>
 <ol>
-<li>对 AI 说："实现一个 3-tap 锐化滤波器，系数 [1,-2,1]，支持 bypass"（或更具体的规格）</li>
-<li>AI 按 <code>.trae/rules/project_rules.md</code> 生成 <code>.ip_spec.yaml</code> + 调用 <code>gen_ip_spec.py</code></li>
-<li>工具链<strong>一次性</strong>产出 4 个文件：</li>
+  <li>对 AI 说："实现一个 3-tap 锐化滤波器，系数 [1,-2,1]，支持 bypass"（或更具体的规格）</li>
+  <li>AI 按 <code class="inline">.trae/rules/project_rules.md</code> 生成 <code class="inline">.ip_spec.yaml</code> + 调用 <code class="inline">gen_ip_spec.py</code></li>
+  <li>工具链<strong>一次性</strong>产出 4 个文件：</li>
 </ol>
-<table>
-<thead>
-<tr>
-<th>文件</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>rtl/&lt;ip&gt;/&lt;ip&gt;.v</code></td>
-<td>Verilog RTL，可直接用或修改数据通路</td>
-</tr>
-<tr>
-<td><code>rtl/&lt;ip&gt;/regdef.json</code></td>
-<td>控制台寄存器表单数据源</td>
-</tr>
-<tr>
-<td><code>sim/tests/tb_&lt;ip&gt;.v</code></td>
-<td>Testbench 骨架</td>
-</tr>
-<tr>
-<td><code>scripts/golden.py</code></td>
-<td>金标准函数（已追加到 MODELS/CONFIG）</td>
-</tr>
-</tbody>
+
+<table class="tbl">
+  <thead><tr><th>文件</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code class="inline">rtl/&lt;ip&gt;/&lt;ip&gt;.v</code></td><td>Verilog RTL，可直接用或修改数据通路</td></tr>
+    <tr><td><code class="inline">rtl/&lt;ip&gt;/regdef.json</code></td><td>控制台寄存器表单数据源</td></tr>
+    <tr><td><code class="inline">sim/tests/tb_&lt;ip&gt;.v</code></td><td>Testbench 骨架</td></tr>
+    <tr><td><code class="inline">scripts/golden.py</code></td><td>金标准函数（已追加到 MODELS/CONFIG）</td></tr>
+  </tbody>
 </table>
-<ol>
-<li>刷新控制台，IP 下拉框自动出现新 IP</li>
-<li>运行 <code>make verify IP=&lt;ip&gt;</code> 验证（金标准自动比对）</li>
+
+<ol start="4">
+  <li>刷新控制台，IP 下拉框自动出现新 IP</li>
+  <li>运行 <code class="inline">make verify IP=&lt;ip&gt;</code> 验证（金标准自动比对）</li>
 </ol>
+
 <p><strong>传统方式 — 文档参照</strong>（7 个已有课题）：</p>
 <ol>
-<li>阅读 <code>docs/IP开发课题说明书.md</code> 中对应课题的规格</li>
-<li>对 AI 说："实现课题二 Gamma 校正 IP，按项目规则放置文件"</li>
-<li>AI 生成 RTL + TB + regdef（<strong>金标准需手动补充</strong>，见下节）</li>
-<li>刷新控制台 → 导入图像 → 运行仿真</li>
+  <li>阅读 <code class="inline">docs/IP开发课题说明书.md</code> 中对应课题的规格</li>
+  <li>对 AI 说："实现课题二 Gamma 校正 IP，按项目规则放置文件"</li>
+  <li>AI 生成 RTL + TB + regdef（<strong>金标准需手动补充</strong>，见下节）</li>
+  <li>刷新控制台 → 导入图像 → 运行仿真</li>
 </ol>
+
 <p><strong>开发迭代循环</strong>：</p>
-<div class="codehilite"><pre><span></span><code><span class="n">flowchart</span><span class="w"> </span><span class="n">LR</span>
-<span class="w">    </span><span class="n">A</span><span class="p">[</span><span class="s">&quot;AI 描述需求&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span><span class="p">[</span><span class="s">&quot;gen_ip_spec.py 生成</span><span class="se">\n</span><span class="s">RTL + TB + regdef + golden&quot;</span><span class="p">]</span>
-<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span><span class="p">[</span><span class="s">&quot;make verify IP=&amp;lt;ip&amp;gt;&quot;</span><span class="p">]</span>
-<span class="w">    </span><span class="n">C</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">D</span><span class="p">{</span><span class="s">&quot;金标准 PASS?&quot;</span><span class="p">}</span>
-<span class="w">    </span><span class="n">D</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="err">否</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">E</span><span class="p">[</span><span class="s">&quot;修正 RTL / golden.py&lt;br/&gt;查看分析面板 / 波形&quot;</span><span class="p">]</span>
-<span class="w">    </span><span class="n">E</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span>
-<span class="w">    </span><span class="n">D</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="err">是</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">F</span><span class="p">[</span><span class="s">&quot;换大图验证 / 跑回归测试&quot;</span><span class="p">]</span>
-</code></pre></div>
+
+<div class="diagram-note">
+  <span class="diagram-title">［开发迭代流程图］</span>
+  AI 描述需求 → gen_ip_spec.py 一次性生成 RTL + TB + regdef + golden → 执行 make verify IP=&lt;ip&gt; → 判断金标准是否 PASS：若否，则修正 RTL / golden.py 并查看分析面板与波形后回到验证步骤；若是，则换大图验证并跑回归测试。
+</div>
 
 <p><strong>关于金标准的修正</strong>：自动生成的金标准是算法模板，RTL 细节（定点位宽、截断时机、饱和逻辑）需要人工核对。核对方法：</p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># 对比 RTL 定点运算与 golden.py 的 Python 运算</span>
-make<span class="w"> </span>verify<span class="w"> </span><span class="nv">IP</span><span class="o">=</span>my_filter<span class="w"> </span><span class="nv">WIDTH</span><span class="o">=</span><span class="m">64</span><span class="w"> </span><span class="nv">HEIGHT</span><span class="o">=</span><span class="m">48</span>
 
-<span class="c1"># FAIL 时查看失配位置</span>
-<span class="c1"># 打开 output/reports/result_&lt;ip&gt;.json 找 mismatch_pixels</span>
-<span class="c1"># 确认是定点截断误差（调 CONFIG[&#39;tol&#39;]）还是逻辑错误（修 golden.py）</span>
-</code></pre></div>
+<pre><code># 对比 RTL 定点运算与 golden.py 的 Python 运算
+make verify IP=my_filter WIDTH=64 HEIGHT=48
 
-<hr />
-<h3 id="3">场景 3：金标准比对验证</h3>
+# FAIL 时查看失配位置
+# 打开 output/reports/result_&lt;ip&gt;.json 找 mismatch_pixels
+# 确认是定点截断误差（调 CONFIG['tol']）还是逻辑错误（修 golden.py）</code></pre>
+
+<hr>
+
+<h3>场景 3：金标准比对验证</h3>
+
 <p><strong>适用 IP</strong>：所有 7 个 IP</p>
-<p><strong>原理</strong>：每个 IP 有一个 Python 参考模型（<code>scripts/golden.py</code>），用与 RTL 完全一致的整数/定点算法复现处理结果，逐字比对仿真输出。</p>
-<p><strong>运行方式</strong>：
-- 控制台点击 ▶ 运行仿真时自动比对，结果显示在界面上
-- 命令行：<code>make verify IP=gamma_corr WIDTH=640 HEIGHT=480</code></p>
+
+<p><strong>原理</strong>：每个 IP 有一个 Python 参考模型（<code class="inline">scripts/golden.py</code>），用与 RTL 完全一致的整数/定点算法复现处理结果，逐字比对仿真输出。</p>
+
+<p><strong>运行方式</strong>：</p>
+<ul>
+  <li>控制台点击 ▶ 运行仿真时自动比对，结果显示在界面上</li>
+  <li>命令行：<code class="inline">make verify IP=gamma_corr WIDTH=640 HEIGHT=480</code></li>
+</ul>
+
 <p><strong>结果解读</strong>：</p>
-<table>
-<thead>
-<tr>
-<th>显示</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>金标准 PASS</td>
-<td>逐位精确，0 像素失配。算法正确</td>
-</tr>
-<tr>
-<td>金标准 FAIL</td>
-<td>存在像素失配，显示失配数量和首个失配坐标。需要检查 RTL</td>
-</tr>
-<tr>
-<td>无参考模型</td>
-<td>该 IP 暂未注册金标准模型，仅做图像质量分析</td>
-</tr>
-<tr>
-<td>视频模式 · 逐帧不做按位比对</td>
-<td>视频模式下不做逐字比对，用时序分析评估</td>
-</tr>
-</tbody>
+
+<table class="tbl">
+  <thead><tr><th>显示</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td>金标准 PASS</td><td>逐位精确，0 像素失配。算法正确</td></tr>
+    <tr><td>金标准 FAIL</td><td>存在像素失配，显示失配数量和首个失配坐标。需要检查 RTL</td></tr>
+    <tr><td>无参考模型</td><td>该 IP 暂未注册金标准模型，仅做图像质量分析</td></tr>
+    <tr><td>视频模式 · 逐帧不做按位比对</td><td>视频模式下不做逐字比对，用时序分析评估</td></tr>
+  </tbody>
 </table>
-<hr />
-<h3 id="4">场景 4：视频多帧仿真</h3>
+
+<hr>
+
+<h3>场景 4：视频多帧仿真</h3>
+
 <p><strong>适用 IP</strong>：降噪（时域）、自动白平衡（帧间统计）、对比度增强（帧间统计）</p>
+
 <p><strong>操作步骤</strong>：</p>
 <ol>
-<li>控制台中点击 <strong>🎬 导入视频</strong></li>
-<li>选择 MP4 文件，扩展自动探测帧数</li>
-<li>设置仿真帧数（建议 2~30，iverilog 速度有限）</li>
-<li>点击 ▶ 运行仿真</li>
-<li>仿帧完成后：拖动滑块逐帧预览 → 点击"时序分析"查看指标随帧变化</li>
+  <li>控制台中点击 <strong>🎬 导入视频</strong></li>
+  <li>选择 MP4 文件，扩展自动探测帧数</li>
+  <li>设置仿真帧数（建议 2~30，iverilog 速度有限）</li>
+  <li>点击 ▶ 运行仿真</li>
+  <li>仿帧完成后：拖动滑块逐帧预览 → 点击"时序分析"查看指标随帧变化</li>
 </ol>
-<blockquote>
-<p><strong>重要</strong>：统计类 IP（AWB、对比度增强）必须多帧仿真。增益在帧 N 统计、帧 N+1 生效，单帧仿真输出等于输入。</p>
-</blockquote>
-<p><strong>命令行</strong>：</p>
-<div class="codehilite"><pre><span></span><code>make<span class="w"> </span>video<span class="w"> </span><span class="nv">IP</span><span class="o">=</span>denoise<span class="w"> </span><span class="nv">INPUT_VIDEO</span><span class="o">=</span>sim/testdata/test.mp4<span class="w"> </span><span class="nv">FRAMES</span><span class="o">=</span><span class="m">30</span>
-</code></pre></div>
 
-<hr />
-<h3 id="5ci">场景 5：回归测试（CI 批量验证）</h3>
+<blockquote>
+  <p><strong>重要</strong>：统计类 IP（AWB、对比度增强）必须多帧仿真。增益在帧 N 统计、帧 N+1 生效，单帧仿真输出等于输入。</p>
+</blockquote>
+
+<p><strong>命令行</strong>：</p>
+
+<pre><code>make video IP=denoise INPUT_VIDEO=sim/testdata/test.mp4 FRAMES=30</code></pre>
+
+<hr>
+
+<h3>场景 5：回归测试（CI 批量验证）</h3>
+
 <p><strong>用途</strong>：修改公共模块后，快速验证所有 IP 未被破坏。</p>
-<div class="codehilite"><pre><span></span><code>make<span class="w"> </span>regression
-</code></pre></div>
+
+<pre><code>make regression</code></pre>
 
 <p>该命令对每个已注册 IP 执行：单帧直通 → 金标准比对 → 随机反压测试，汇总 PASS/FAIL。</p>
-<hr />
-<h3 id="6">场景 6：调试波形</h3>
-<p><strong>步骤</strong>：
-1. 在控制台点击 <strong>📈 查看波形</strong>（自动生成 VCD 并打开）
-2. 或命令行：<code>make sim WAVE=1 IP=gamma_corr</code>
-3. 在波形查看器中检查：
-   - <code>aresetn</code> → <code>s_axis_tvalid</code> 的复位释放时序
-   - <code>tuser/tlast</code> 的 SOF/EOL 对齐（帧首/行尾是否正确）
-   - <code>tready</code> 握手期间 tdata 有无毛刺
-   - 流水线延迟：输入像素到输出像素的时钟周期数</p>
-<hr />
-<h3 id="7">场景 7：验证缺陷注入与鲁棒性</h3>
-<p><strong>操作</strong>：控制台 <strong>⚔ 预处理</strong> → 选择注入项 → 运行仿真</p>
-<table>
-<thead>
-<tr>
-<th>注入项</th>
-<th>测试目标</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>高斯噪声 σ=15</td>
-<td>验证降噪 IP 的噪声抑制能力</td>
-</tr>
-<tr>
-<td>坏点注入 200/帧</td>
-<td>验证坏点校正 IP 是否能检测并修复</td>
-</tr>
-<tr>
-<td>高斯模糊 5×5</td>
-<td>验证锐化 IP 是否能恢复清晰度</td>
-</tr>
-<tr>
-<td>噪声+坏点（组合）</td>
-<td>验证链式处理（降噪→坏点校正）的级联效果</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="_5">六、图像质量分析详解</h2>
-<p>每次仿真完成后自动运行 5 项分析。控制台点击对应按钮弹出独立面板。</p>
-<h3 id="61">6.1 图像对比</h3>
-<p>左右并排显示输入图和输出图，确认视觉效果。适合快速验证"有没有处理"。</p>
-<h3 id="62">6.2 差异热力图</h3>
-<p><code>|输出 - 输入|</code> 的伪彩色渲染。红色区域 = 变化大的区域，蓝色 = 无变化区域。一眼定位 IP 的作用范围。</p>
-<h3 id="63">6.3 锐度分析</h3>
-<table>
-<thead>
-<tr>
-<th>指标</th>
-<th>算法</th>
-<th>解读</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Laplacian 方差</td>
-<td><code>cv2.Laplacian().var()</code></td>
-<td>整体锐度。值越高越清晰</td>
-</tr>
-<tr>
-<td>Tenengrad 值</td>
-<td>Sobel 梯度平方和</td>
-<td>经典对焦评价函数。边缘越强值越高</td>
-</tr>
-<tr>
-<td>等级</td>
-<td>自动判定</td>
-<td>模糊 / 一般 / 良好 / 优秀 / 极佳</td>
-</tr>
-</tbody>
-</table>
-<p><strong>典型用例</strong>：</p>
-<ul>
-<li>锐化 IP 开发：输入模糊图卡，期望输出 Laplacian 方差显著提升</li>
-<li>降噪 IP 开发：输入噪声图，期望输出不损失过多锐度（Laplacian 方差下降不明显）</li>
-</ul>
-<h3 id="64">6.4 白平衡分析</h3>
-<table>
-<thead>
-<tr>
-<th>指标</th>
-<th>算法</th>
-<th>解读</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>R/G/B 增益</td>
-<td>灰度世界假设</td>
-<td>理想值为 <code>1.0 / 1.0 / 1.0</code></td>
-</tr>
-<tr>
-<td>色温倾向</td>
-<td>R/B 比率估算</td>
-<td>偏暖(黄) / 中性 / 偏冷(蓝)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>典型用例</strong>：AWB IP 开发 — 输入灰卡·3000K（偏暖），期望输出增益接近 1.0 / 1.0 / 1.0，色温倾向变为"中性"。</p>
-<h3 id="65">6.5 直方图</h3>
-<table>
-<thead>
-<tr>
-<th>指标</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>R/G/B 均值</td>
-<td>三通道平均亮度</td>
-</tr>
-<tr>
-<td>亮度变化</td>
-<td>输入均值 → 输出均值的偏移</td>
-</tr>
-<tr>
-<td>分位数统计</td>
-<td>P5/P50/P95 百分位</td>
-</tr>
-</tbody>
-</table>
-<p><strong>典型用例</strong>：</p>
-<ul>
-<li>Gamma 校正：输出均值应提升，暗部抬升</li>
-<li>对比度增强：直方图分布应更均匀</li>
-</ul>
-<h3 id="66-psnr">6.6 PSNR</h3>
-<p>峰值信噪比，衡量输出与输入的差异程度。</p>
-<table>
-<thead>
-<tr>
-<th>PSNR 范围</th>
-<th>等级</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>&gt; 40 dB</td>
-<td>优秀</td>
-<td>差异极小，肉眼不可见</td>
-</tr>
-<tr>
-<td>30–40 dB</td>
-<td>良好</td>
-<td>轻微差异</td>
-</tr>
-<tr>
-<td>20–30 dB</td>
-<td>一般</td>
-<td>明显差异（IP 正常工作，处理强度较大）</td>
-</tr>
-<tr>
-<td>&lt; 20 dB</td>
-<td>差</td>
-<td>差异很大（可能是算法或参数问题）</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>注意</strong>：PSNR 高不一定好，低不一定差。锐化 IP 的 PSNR 天然偏低（主动改变了像素值）。PSNR 应结合其他指标综合判断。</p>
-</blockquote>
-<h3 id="67-gamma">6.7 Gamma 分析</h3>
-<p>实测 Gamma 曲线 vs 目标 Gamma 曲线。对 16 级灰度阶梯采样，最小二乘拟合出等效 Gamma 值。</p>
-<p><strong>典型用例</strong>：Gamma 校正 IP（目标 2.2，偏差 &lt; 0.05 为优秀）、色彩空间转换 IP（目标 1.0 直通）。</p>
-<hr />
-<h2 id="_6">七、命令行参考</h2>
-<p>扩展内部驱动命令行，但也可直接在终端使用。</p>
-<h3 id="71-makefile">7.1 Makefile 目标</h3>
-<table>
-<thead>
-<tr>
-<th>目标</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>make all</code></td>
-<td>一键：激励生成 → 仿真 → 图像还原 → 金标准 → 质量分析</td>
-</tr>
-<tr>
-<td><code>make sim</code></td>
-<td>仅运行仿真</td>
-</tr>
-<tr>
-<td><code>make verify</code></td>
-<td>金标准比对</td>
-</tr>
-<tr>
-<td><code>make regression</code></td>
-<td>全 IP 回归测试</td>
-</tr>
-<tr>
-<td><code>make video</code></td>
-<td>视频模式全流程</td>
-</tr>
-<tr>
-<td><code>make sim WAVE=1</code></td>
-<td>仿真 + 输出 VCD 波形</td>
-</tr>
-<tr>
-<td><code>make clean</code></td>
-<td>清理输出文件</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Makefile 变量</strong>（<code>make KEY=VALUE</code> 传入）：</p>
-<table>
-<thead>
-<tr>
-<th>变量</th>
-<th>默认值</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>IP</td>
-<td>passthrough</td>
-<td>目标 IP 名称</td>
-</tr>
-<tr>
-<td>WIDTH</td>
-<td>64</td>
-<td>图像宽度</td>
-</tr>
-<tr>
-<td>HEIGHT</td>
-<td>48</td>
-<td>图像高度</td>
-</tr>
-<tr>
-<td>FRAMES</td>
-<td>1</td>
-<td>帧数</td>
-</tr>
-<tr>
-<td>INPUT_IMG</td>
-<td>sim/testdata/test_input.png</td>
-<td>输入图像路径</td>
-</tr>
-<tr>
-<td>INPUT_VIDEO</td>
-<td>sim/testdata/test_input.mp4</td>
-<td>输入视频路径</td>
-</tr>
-</tbody>
-</table>
-<h3 id="72-python">7.2 Python 脚本速查</h3>
-<table>
-<thead>
-<tr>
-<th>脚本</th>
-<th>用途</th>
-<th>示例</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>gen_stimulus.py</td>
-<td>图像 → hex 激励</td>
-<td><code>-i input.png -o stimulus.hex -f RGB888</code></td>
-</tr>
-<tr>
-<td>gen_pattern.py</td>
-<td>生成测试图卡</td>
-<td><code>--pattern ramp -W 640 -H 480</code></td>
-</tr>
-<tr>
-<td>gen_header.py</td>
-<td>生成帧头信息</td>
-<td><code>-w 640 -H 480 -f RGB888</code></td>
-</tr>
-<tr>
-<td>gen_output.py</td>
-<td>hex → 图像/视频</td>
-<td><code>-i result.hex -o output.png</code></td>
-</tr>
-<tr>
-<td>gen_video_stimulus.py</td>
-<td>视频拆帧 → hex</td>
-<td><code>-i input.mp4 --max-frames 30</code></td>
-</tr>
-<tr>
-<td>analyze.py</td>
-<td>质量分析 + 输出报告</td>
-<td><code>--input in.png --output out.png --all</code></td>
-</tr>
-<tr>
-<td>verify.py</td>
-<td>金标准比对编排</td>
-<td><code>--ip gamma_corr -W 640 -H 480</code></td>
-</tr>
-<tr>
-<td>preprocess.py</td>
-<td>噪声/坏点/模糊注入</td>
-<td><code>-i in.png -o out.png --noise 15</code></td>
-</tr>
-<tr>
-<td>dump_frames.py</td>
-<td>多帧 hex 拆帧为 PNG</td>
-<td><code>-i stimulus.hex -d dir/ --frames 30</code></td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="_7">八、项目目录结构</h2>
-<p>新建项目后的完整结构：</p>
-<div class="codehilite"><pre><span></span><code><span class="n">my_vip_project</span><span class="o">/</span>
-<span class="err">├──</span><span class="w"> </span><span class="n">CLAUDE</span><span class="p">.</span><span class="n">md</span><span class="w">                    </span><span class="err">←</span><span class="w"> </span><span class="n">Vibe</span><span class="w"> </span><span class="n">Coding</span><span class="w"> </span><span class="err">行为准则（先想再写、简单优先…）</span>
-<span class="err">├──</span><span class="w"> </span><span class="n">docs</span><span class="o">/</span>
-<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">IP开发课题说明书</span><span class="p">.</span><span class="n">md</span><span class="w">          </span><span class="err">←</span><span class="w"> </span><span class="mh">7</span><span class="w"> </span><span class="err">个</span><span class="w"> </span><span class="n">IP</span><span class="w"> </span><span class="err">课题的功能需求与算法规格</span>
-<span class="err">├──</span><span class="w"> </span><span class="p">.</span><span class="n">trae</span><span class="o">/</span>
-<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">rules</span><span class="o">/</span>
-<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="n">project_rules</span><span class="p">.</span><span class="n">md</span><span class="w">       </span><span class="err">←</span><span class="w"> </span><span class="n">AI</span><span class="w"> </span><span class="err">代码生成规则（</span><span class="n">TB</span><span class="w"> </span><span class="err">骨架、接口约定、</span><span class="n">regdef</span><span class="w"> </span><span class="err">格式）</span>
-<span class="err">├──</span><span class="w"> </span><span class="n">rtl</span><span class="o">/</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">passthrough</span><span class="o">/</span><span class="w">               </span><span class="err">←</span><span class="w"> </span><span class="err">示例</span><span class="w"> </span><span class="n">DUT</span><span class="err">（直通，可参考）</span>
-<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">passthrough</span><span class="p">.</span><span class="n">v</span>
-<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">regdef</span><span class="p">.</span><span class="n">json</span>
-<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="o">&lt;</span><span class="err">你的</span><span class="w"> </span><span class="n">IP</span><span class="o">&gt;/</span><span class="w">                 </span><span class="err">←</span><span class="w"> </span><span class="err">你的</span><span class="w"> </span><span class="n">IP</span><span class="w"> </span><span class="err">代码放这里</span>
-<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="o">&lt;</span><span class="n">ip_name</span><span class="o">&gt;</span><span class="p">.</span><span class="n">v</span>
-<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="n">regdef</span><span class="p">.</span><span class="n">json</span><span class="w">             </span><span class="err">←</span><span class="w"> </span><span class="err">必须提供，控制台据此渲染寄存器编辑界面</span>
-<span class="err">├──</span><span class="w"> </span><span class="n">sim</span><span class="o">/</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">common</span><span class="o">/</span><span class="w">                    </span><span class="err">←</span><span class="w"> </span><span class="err">公共</span><span class="w"> </span><span class="n">BFM</span><span class="err">（请勿修改）</span>
-<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">axis_video_source</span><span class="p">.</span><span class="n">v</span><span class="w">    </span><span class="err">←</span><span class="w"> </span><span class="n">AXI</span><span class="o">-</span><span class="n">Stream</span><span class="w"> </span><span class="err">激励源</span>
-<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">axis_video_sink</span><span class="p">.</span><span class="n">v</span><span class="w">      </span><span class="err">←</span><span class="w"> </span><span class="n">AXI</span><span class="o">-</span><span class="n">Stream</span><span class="w"> </span><span class="err">结果采集</span>
-<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">reg_config</span><span class="p">.</span><span class="n">v</span><span class="w">           </span><span class="err">←</span><span class="w"> </span><span class="err">寄存器配置</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">tests</span><span class="o">/</span>
-<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">tb_</span><span class="o">&lt;</span><span class="n">ip_name</span><span class="o">&gt;</span><span class="p">.</span><span class="n">v</span><span class="w">         </span><span class="err">←</span><span class="w"> </span><span class="err">你的</span><span class="w"> </span><span class="n">IP</span><span class="w"> </span><span class="err">的</span><span class="w"> </span><span class="n">Testbench</span>
-<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">testdata</span><span class="o">/</span><span class="w">                  </span><span class="err">←</span><span class="w"> </span><span class="err">仿真数据（图像</span><span class="o">/</span><span class="n">hex</span><span class="w"> </span><span class="err">文件放这里）</span>
-<span class="err">├──</span><span class="w"> </span><span class="n">scripts</span><span class="o">/</span><span class="w">                       </span><span class="err">←</span><span class="w"> </span><span class="n">Python</span><span class="w"> </span><span class="err">工具链</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">gen_stimulus</span><span class="p">.</span><span class="n">py</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">gen_output</span><span class="p">.</span><span class="n">py</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">analyze</span><span class="p">.</span><span class="n">py</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">golden</span><span class="p">.</span><span class="n">py</span><span class="w">                  </span><span class="err">←</span><span class="w"> </span><span class="err">金标准参考模型</span>
-<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="p">...</span>
-<span class="err">├──</span><span class="w"> </span><span class="k">output</span><span class="o">/</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">images</span><span class="o">/</span><span class="w">                    </span><span class="err">←</span><span class="w"> </span><span class="err">输出图像</span>
-<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">reports</span><span class="o">/</span><span class="w">                   </span><span class="err">←</span><span class="w"> </span><span class="err">分析报告</span><span class="w"> </span><span class="n">JSON</span>
-<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">waves</span><span class="o">/</span><span class="w">                     </span><span class="err">←</span><span class="w"> </span><span class="p">.</span><span class="n">vcd</span><span class="w"> </span><span class="err">波形文件</span>
-<span class="err">├──</span><span class="w"> </span><span class="n">Makefile</span>
-<span class="err">├──</span><span class="w"> </span><span class="n">requirements</span><span class="p">.</span><span class="n">txt</span>
-<span class="err">├──</span><span class="w"> </span><span class="p">.</span><span class="n">gitignore</span>
-<span class="err">└──</span><span class="w"> </span><span class="n">README</span><span class="p">.</span><span class="n">md</span>
-</code></pre></div>
 
-<hr />
-<h2 id="_8">九、常见问题</h2>
-<p><strong>Q: 新建项目后 IP 下拉框是空的</strong></p>
-<p>A: 新项目只有一个 <code>passthrough</code> 示例 IP。用 AI 生成或手写 IP 代码后，确保 <code>rtl/&lt;ip_name&gt;/</code> 目录存在 <code>.v</code> 文件，刷新控制台即可。</p>
-<hr />
-<p><strong>Q: 仿真运行后提示"尚无结果"</strong></p>
-<p>A: 检查 VIP Sim 输出面板的日志。常见原因：iverilog 编译失败（语法错误）、<code>stimulus.hex</code> 未生成、DUT 像素数不匹配导致 sink 挂死。</p>
-<hr />
-<p><strong>Q: 统计类 IP（AWB/对比度增强）单帧仿真无效果</strong></p>
-<p>A: 这是正常现象。统计类 IP 的增益/参数在帧 N 统计、帧 N+1 才生效。必须在控制台设置 <code>帧数 ≥ 2</code>，分析工具默认取最后一帧的结果。</p>
-<hr />
-<p><strong>Q: 4K 分辨率仿真很慢</strong></p>
+<hr>
+
+<h3>场景 6：调试波形</h3>
+
+<p><strong>步骤</strong>：</p>
+<ol>
+  <li>在控制台点击 <strong>📈 查看波形</strong>（自动生成 VCD 并打开）</li>
+  <li>或命令行：<code class="inline">make sim WAVE=1 IP=gamma_corr</code></li>
+  <li>在波形查看器中检查：</li>
+</ol>
+<ul>
+  <li><code class="inline">aresetn</code> → <code class="inline">s_axis_tvalid</code> 的复位释放时序</li>
+  <li><code class="inline">tuser/tlast</code> 的 SOF/EOL 对齐（帧首/行尾是否正确）</li>
+  <li><code class="inline">tready</code> 握手期间 tdata 有无毛刺</li>
+  <li>流水线延迟：输入像素到输出像素的时钟周期数</li>
+</ul>
+
+<hr>
+
+<h3>场景 7：验证缺陷注入与鲁棒性</h3>
+
+<p><strong>操作</strong>：控制台 <strong>⚔ 预处理</strong> → 选择注入项 → 运行仿真</p>
+
+<table class="tbl">
+  <thead><tr><th>注入项</th><th>测试目标</th></tr></thead>
+  <tbody>
+    <tr><td>高斯噪声 σ=15</td><td>验证降噪 IP 的噪声抑制能力</td></tr>
+    <tr><td>坏点注入 200/帧</td><td>验证坏点校正 IP 是否能检测并修复</td></tr>
+    <tr><td>高斯模糊 5×5</td><td>验证锐化 IP 是否能恢复清晰度</td></tr>
+    <tr><td>噪声+坏点（组合）</td><td>验证链式处理（降噪→坏点校正）的级联效果</td></tr>
+  </tbody>
+</table>
+
+<!-- ===== 六、图像质量分析详解 ===== -->
+<h1>六、图像质量分析详解</h1>
+
+<p>每次仿真完成后自动运行 5 项分析。控制台点击对应按钮弹出独立面板。</p>
+
+<h2>6.1 图像对比</h2>
+
+<p>左右并排显示输入图和输出图，确认视觉效果。适合快速验证"有没有处理"。</p>
+
+<h2>6.2 差异热力图</h2>
+
+<p><code class="inline">|输出 - 输入|</code> 的伪彩色渲染。红色区域 = 变化大的区域，蓝色 = 无变化区域。一眼定位 IP 的作用范围。</p>
+
+<h2>6.3 锐度分析</h2>
+
+<table class="tbl">
+  <thead><tr><th>指标</th><th>算法</th><th>解读</th></tr></thead>
+  <tbody>
+    <tr><td>Laplacian 方差</td><td><code class="inline">cv2.Laplacian().var()</code></td><td>整体锐度。值越高越清晰</td></tr>
+    <tr><td>Tenengrad 值</td><td>Sobel 梯度平方和</td><td>经典对焦评价函数。边缘越强值越高</td></tr>
+    <tr><td>等级</td><td>自动判定</td><td>模糊 / 一般 / 良好 / 优秀 / 极佳</td></tr>
+  </tbody>
+</table>
+
+<p><strong>典型用例</strong>：</p>
+<ul>
+  <li>锐化 IP 开发：输入模糊图卡，期望输出 Laplacian 方差显著提升</li>
+  <li>降噪 IP 开发：输入噪声图，期望输出不损失过多锐度（Laplacian 方差下降不明显）</li>
+</ul>
+
+<h2>6.4 白平衡分析</h2>
+
+<table class="tbl">
+  <thead><tr><th>指标</th><th>算法</th><th>解读</th></tr></thead>
+  <tbody>
+    <tr><td>R/G/B 增益</td><td>灰度世界假设</td><td>理想值为 <code class="inline">1.0 / 1.0 / 1.0</code></td></tr>
+    <tr><td>色温倾向</td><td>R/B 比率估算</td><td>偏暖(黄) / 中性 / 偏冷(蓝)</td></tr>
+  </tbody>
+</table>
+
+<p><strong>典型用例</strong>：AWB IP 开发 — 输入灰卡·3000K（偏暖），期望输出增益接近 1.0 / 1.0 / 1.0，色温倾向变为"中性"。</p>
+
+<h2>6.5 直方图</h2>
+
+<table class="tbl">
+  <thead><tr><th>指标</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>R/G/B 均值</td><td>三通道平均亮度</td></tr>
+    <tr><td>亮度变化</td><td>输入均值 → 输出均值的偏移</td></tr>
+    <tr><td>分位数统计</td><td>P5/P50/P95 百分位</td></tr>
+  </tbody>
+</table>
+
+<p><strong>典型用例</strong>：</p>
+<ul>
+  <li>Gamma 校正：输出均值应提升，暗部抬升</li>
+  <li>对比度增强：直方图分布应更均匀</li>
+</ul>
+
+<h2>6.6 PSNR</h2>
+
+<p>峰值信噪比，衡量输出与输入的差异程度。</p>
+
+<table class="tbl">
+  <thead><tr><th>PSNR 范围</th><th>等级</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td>&gt; 40 dB</td><td>优秀</td><td>差异极小，肉眼不可见</td></tr>
+    <tr><td>30–40 dB</td><td>良好</td><td>轻微差异</td></tr>
+    <tr><td>20–30 dB</td><td>一般</td><td>明显差异（IP 正常工作，处理强度较大）</td></tr>
+    <tr><td>&lt; 20 dB</td><td>差</td><td>差异很大（可能是算法或参数问题）</td></tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p><strong>注意</strong>：PSNR 高不一定好，低不一定差。锐化 IP 的 PSNR 天然偏低（主动改变了像素值）。PSNR 应结合其他指标综合判断。</p>
+</blockquote>
+
+<h2>6.7 Gamma 分析</h2>
+
+<p>实测 Gamma 曲线 vs 目标 Gamma 曲线。对 16 级灰度阶梯采样，最小二乘拟合出等效 Gamma 值。</p>
+
+<p><strong>典型用例</strong>：Gamma 校正 IP（目标 2.2，偏差 &lt; 0.05 为优秀）、色彩空间转换 IP（目标 1.0 直通）。</p>
+
+<!-- ===== 七、命令行参考 ===== -->
+<h1>七、命令行参考</h1>
+
+<p>扩展内部驱动命令行，但也可直接在终端使用。</p>
+
+<h2>7.1 Makefile 目标</h2>
+
+<table class="tbl">
+  <thead><tr><th>目标</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code class="inline">make all</code></td><td>一键：激励生成 → 仿真 → 图像还原 → 金标准 → 质量分析</td></tr>
+    <tr><td><code class="inline">make sim</code></td><td>仅运行仿真</td></tr>
+    <tr><td><code class="inline">make verify</code></td><td>金标准比对</td></tr>
+    <tr><td><code class="inline">make regression</code></td><td>全 IP 回归测试</td></tr>
+    <tr><td><code class="inline">make video</code></td><td>视频模式全流程</td></tr>
+    <tr><td><code class="inline">make sim WAVE=1</code></td><td>仿真 + 输出 VCD 波形</td></tr>
+    <tr><td><code class="inline">make clean</code></td><td>清理输出文件</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Makefile 变量</strong>（<code class="inline">make KEY=VALUE</code> 传入）：</p>
+
+<table class="tbl">
+  <thead><tr><th>变量</th><th>默认值</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>IP</td><td>passthrough</td><td>目标 IP 名称</td></tr>
+    <tr><td>WIDTH</td><td>64</td><td>图像宽度</td></tr>
+    <tr><td>HEIGHT</td><td>48</td><td>图像高度</td></tr>
+    <tr><td>FRAMES</td><td>1</td><td>帧数</td></tr>
+    <tr><td>INPUT_IMG</td><td><code class="inline">sim/testdata/test_input.png</code></td><td>输入图像路径</td></tr>
+    <tr><td>INPUT_VIDEO</td><td><code class="inline">sim/testdata/test_input.mp4</code></td><td>输入视频路径</td></tr>
+  </tbody>
+</table>
+
+<h2>7.2 Python 脚本速查</h2>
+
+<table class="tbl">
+  <thead><tr><th>脚本</th><th>用途</th><th>示例</th></tr></thead>
+  <tbody>
+    <tr><td>gen_stimulus.py</td><td>图像 → hex 激励</td><td><code class="inline">-i input.png -o stimulus.hex -f RGB888</code></td></tr>
+    <tr><td>gen_pattern.py</td><td>生成测试图卡</td><td><code class="inline">--pattern ramp -W 640 -H 480</code></td></tr>
+    <tr><td>gen_header.py</td><td>生成帧头信息</td><td><code class="inline">-w 640 -H 480 -f RGB888</code></td></tr>
+    <tr><td>gen_output.py</td><td>hex → 图像/视频</td><td><code class="inline">-i result.hex -o output.png</code></td></tr>
+    <tr><td>gen_video_stimulus.py</td><td>视频拆帧 → hex</td><td><code class="inline">-i input.mp4 --max-frames 30</code></td></tr>
+    <tr><td>analyze.py</td><td>质量分析 + 输出报告</td><td><code class="inline">--input in.png --output out.png --all</code></td></tr>
+    <tr><td>verify.py</td><td>金标准比对编排</td><td><code class="inline">--ip gamma_corr -W 640 -H 480</code></td></tr>
+    <tr><td>preprocess.py</td><td>噪声/坏点/模糊注入</td><td><code class="inline">-i in.png -o out.png --noise 15</code></td></tr>
+    <tr><td>dump_frames.py</td><td>多帧 hex 拆帧为 PNG</td><td><code class="inline">-i stimulus.hex -d dir/ --frames 30</code></td></tr>
+  </tbody>
+</table>
+
+<!-- ===== 八、项目目录结构 ===== -->
+<h1>八、项目目录结构</h1>
+
+<p>新建项目后的完整结构：</p>
+
+<pre><code>my_vip_project/
+├── CLAUDE.md                    ← Vibe Coding 行为准则（先想再写、简单优先…）
+├── docs/
+│   └── IP开发课题说明书.md          ← 7 个 IP 课题的功能需求与算法规格
+├── .trae/
+│   └── rules/
+│       └── project_rules.md       ← AI 代码生成规则（TB 骨架、接口约定、regdef 格式）
+├── rtl/
+│   ├── passthrough/               ← 示例 DUT（直通，可参考）
+│   │   ├── passthrough.v
+│   │   └── regdef.json
+│   └── &lt;你的 IP&gt;/                 ← 你的 IP 代码放这里
+│       ├── &lt;ip_name&gt;.v
+│       └── regdef.json             ← 必须提供，控制台据此渲染寄存器编辑界面
+├── sim/
+│   ├── common/                    ← 公共 BFM（请勿修改）
+│   │   ├── axis_video_source.v    ← AXI-Stream 激励源
+│   │   ├── axis_video_sink.v      ← AXI-Stream 结果采集
+│   │   └── reg_config.v           ← 寄存器配置
+│   ├── tests/
+│   │   └── tb_&lt;ip_name&gt;.v         ← 你的 IP 的 Testbench
+│   └── testdata/                  ← 仿真数据（图像/hex 文件放这里）
+├── scripts/                       ← Python 工具链
+│   ├── gen_stimulus.py
+│   ├── gen_output.py
+│   ├── analyze.py
+│   ├── golden.py                  ← 金标准参考模型
+│   └── ...
+├── output/
+│   ├── images/                    ← 输出图像
+│   ├── reports/                   ← 分析报告 JSON
+│   └── waves/                     ← .vcd 波形文件
+├── Makefile
+├── requirements.txt
+├── .gitignore
+└── README.md</code></pre>
+
+<!-- ===== 九、常见问题 ===== -->
+<h1>九、常见问题</h1>
+
+<h3>Q: 新建项目后 IP 下拉框是空的</h3>
+<p>A: 新项目只有一个 <code class="inline">passthrough</code> 示例 IP。用 AI 生成或手写 IP 代码后，确保 <code class="inline">rtl/&lt;ip_name&gt;/</code> 目录存在 <code class="inline">.v</code> 文件，刷新控制台即可。</p>
+
+<hr>
+
+<h3>Q: 仿真运行后提示"尚无结果"</h3>
+<p>A: 检查 VIP Sim 输出面板的日志。常见原因：iverilog 编译失败（语法错误）、<code class="inline">stimulus.hex</code> 未生成、DUT 像素数不匹配导致 sink 挂死。</p>
+
+<hr>
+
+<h3>Q: 统计类 IP（AWB/对比度增强）单帧仿真无效果</h3>
+<p>A: 这是正常现象。统计类 IP 的增益/参数在帧 N 统计、帧 N+1 才生效。必须在控制台设置 <code class="inline">帧数 ≥ 2</code>，分析工具默认取最后一帧的结果。</p>
+
+<hr>
+
+<h3>Q: 4K 分辨率仿真很慢</h3>
 <p>A: iverilog 为解释执行，一帧 4K 含 830 万像素，仿真可能耗时数十分钟。日常调试使用缩小分辨率（如 64×64 或 256×144），算法逻辑与全分辨率完全一致。仅在里程碑验证时跑 1~2 次全分辨率。</p>
-<hr />
-<p><strong>Q: 如何增加新 IP 的金标准模型</strong></p>
-<p>A: 编辑 <code>scripts/golden.py</code>：
-1. 在 <code>MODELS</code> 字典添加 <code>'&lt;ip&gt;': m_&lt;ip&gt;</code>
-2. 实现 <code>m_&lt;ip&gt;(pixels, regs, width, height)</code> → 返回期望像素列表
-3. 在 <code>CONFIG</code> 字典注册比对参数（帧数、容差、容许失配比例）
-4. 运行 <code>make verify IP=&lt;ip&gt;</code> 验证</p>
-<hr />
-<p><strong>Q: 仿真日志出现 <code>ERROR: 仿真超时</code></strong></p>
-<p>A: DUT 未输出足够像素，sink 一直等待。检查：
-- DUT 是否正确透传 <code>tuser/tlast</code>
-- 流水线深度是否导致输出延迟（超时保护默认足够大，除非像素数严重不匹配）
-- 统计类 IP 是否开启了 bypass 模式</p>
-<hr />
-<p><strong>Q: PSNR 100 dB，但金标准 FAIL</strong></p>
+
+<hr>
+
+<h3>Q: 如何增加新 IP 的金标准模型</h3>
+<p>A: 编辑 <code class="inline">scripts/golden.py</code>：</p>
+<ol>
+  <li>在 <code class="inline">MODELS</code> 字典添加 <code class="inline">'&lt;ip&gt;': m_&lt;ip&gt;</code></li>
+  <li>实现 <code class="inline">m_&lt;ip&gt;(pixels, regs, width, height)</code> → 返回期望像素列表</li>
+  <li>在 <code class="inline">CONFIG</code> 字典注册比对参数（帧数、容差、容许失配比例）</li>
+  <li>运行 <code class="inline">make verify IP=&lt;ip&gt;</code> 验证</li>
+</ol>
+
+<hr>
+
+<h3>Q: 仿真日志出现 ERROR: 仿真超时</h3>
+<p>A: DUT 未输出足够像素，sink 一直等待。检查：</p>
+<ul>
+  <li>DUT 是否正确透传 <code class="inline">tuser/tlast</code></li>
+  <li>流水线深度是否导致输出延迟（超时保护默认足够大，除非像素数严重不匹配）</li>
+  <li>统计类 IP 是否开启了 bypass 模式</li>
+</ul>
+
+<hr>
+
+<h3>Q: PSNR 100 dB，但金标准 FAIL</h3>
 <p>A: 金标准比对的是 RTL 定点运算结果与 Python 参考模型的一致性（逐位精确），PSNR 衡量的是输出与输入的差异。两者独立——PSNR 高只说明输出接近输入，不说明算法正确。</p>
-<hr />
-<p><strong>Q: 图像输出颜色偏紫/偏绿</strong></p>
-<p>A: 检查 RTL 中 <code>tdata</code> 的字节排列是否为 <code>{8'd0, R[7:0], G[7:0], B[7:0]}</code>。常见错误是将 RGB 顺序写反或位宽截断错误。</p>
-<hr />
-<p><strong>文档版本</strong>：V1.1.0<br />
-<strong>最后更新</strong>：2026-06-14</p>
+
+<hr>
+
+<h3>Q: 图像输出颜色偏紫/偏绿</h3>
+<p>A: 检查 RTL 中 <code class="inline">tdata</code> 的字节排列是否为 <code class="inline">{8'd0, R[7:0], G[7:0], B[7:0]}</code>。常见错误是将 RGB 顺序写反或位宽截断错误。</p>
+
+<div class="end-note">
+  <strong>文档版本</strong>：V1.2.0<br>
+  <strong>最后更新</strong>：2026-06-24
+</div>
+
+</div>
+
 </body>
 </html>

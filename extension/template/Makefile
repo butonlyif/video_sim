@@ -21,8 +21,9 @@ WAVE        ?= 0
 VIDEO       ?= 0
 
 # 转发给 sim.py 的变量 (KEY=VALUE)
+# 注意: INPUT_IMG/INPUT_VIDEO 去掉引号 (扩展传入时带引号, Make 会把它们当字面字符)
 ARGS = IP=$(IP) WIDTH=$(WIDTH) HEIGHT=$(HEIGHT) FRAMES=$(FRAMES) \
-       FORMAT=$(FORMAT) INPUT_IMG=$(INPUT_IMG) INPUT_VIDEO=$(INPUT_VIDEO) \
+       FORMAT=$(FORMAT) INPUT_IMG=$(subst ",,$(INPUT_IMG)) INPUT_VIDEO=$(subst ",,$(INPUT_VIDEO)) \
        FPS=$(FPS) WAVE=$(WAVE) VIDEO=$(VIDEO)
 
 TARGETS = gen_stimulus sim gen_output analyze verify check \

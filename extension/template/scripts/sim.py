@@ -259,6 +259,7 @@ def main():
     for arg in sys.argv[1:]:
         if '=' in arg:
             key, val = arg.split('=', 1)
+            val = val.strip().strip('"').strip("'")  # 剥离首尾引号 (跨平台兼容)
             if key in V and val != '':   # 留空 → 保留默认
                 V[key] = val
         else:

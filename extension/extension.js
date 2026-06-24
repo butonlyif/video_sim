@@ -33,7 +33,9 @@ function run(cmd, cwd) {
         // Windows 用 cmd.exe /c, 其他用 sh -c
         const shell = isWin ? 'cmd.exe' : '/bin/sh';
         const args = isWin ? ['/c', cmd] : ['-c', cmd];
-        const child = cp.spawn(shell, args, { cwd });
+        // Windows 设置 PYTHONIOENCODING=utf-8 支持中文输出
+        const env = isWin ? { ...process.env, PYTHONIOENCODING: 'utf-8' } : process.env;
+        const child = cp.spawn(shell, args, { cwd, env });
         let buf = '';
         child.stdout.on('data', (d) => { buf += d.toString(); out.append(d.toString()); });
         child.stderr.on('data', (d) => { buf += d.toString(); out.append(d.toString()); });
@@ -335,7 +337,9 @@ async function doRun(params) {
 function runCapture(cmd, cwd) {
     out.appendLine(`$ ${cmd}`);
     return new Promise((resolve) => {
-        const child = cp.spawn(cmd, { shell: true, cwd });
+        // Windows 设置 PYTHONIOENCODING=utf-8 支持中文输出
+        const env = isWin ? { ...process.env, PYTHONIOENCODING: 'utf-8' } : process.env;
+        const child = cp.spawn(cmd, { shell: true, cwd, env });
         let buf = '';
         const cap = (d) => { buf += d.toString(); out.append(d.toString()); };
         child.stdout.on('data', cap);
@@ -601,7 +605,8 @@ async function cmdCheckEnv() {
     const items = [];
     // 不用 Unix 管道(2>/dev/null|head), 在 JS 侧取首行, 兼容 Windows cmd.exe
     const check = (cmd) => new Promise((res) =>
-        cp.exec(cmd, { cwd: root }, (e, so, se) => res(e ? null : (so || se || '').trim())));
+        cp.exec(cmd, { cwd: root, env: isWin ? { ...process.env, PYTHONIOENCODING: 'utf-8' } : process.env },
+            (e, so, se) => res(e ? null : (so || se || '').trim())));
     const iv = await check('iverilog -V');
     items.push(iv ? `✓ ${iv.split('\n')[0]}` : '✗ iverilog 未安装 (scoop install icarus-verilog)');
     const py = root ? pyExec(root) : null;

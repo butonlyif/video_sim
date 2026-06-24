@@ -2,8 +2,8 @@
 
 | 属性   | 值                      |
 | ---- | ---------------------- |
-| 版本   | 1.1.0                  |
-| 日期   | 2026-06-14             |
+| 版本   | 1.2.0                  |
+| 日期   | 2026-06-24             |
 | 适用系统 | awesom 视频处理 IP        |
 | 目标用户 | FPGA 验证工程师 / 课题学生 / IP 开发者 |
 
@@ -27,10 +27,10 @@ VIP 仿真验证平台是一套**端到端视频 IP 仿真环境**，以 Trae / 
 
 ### 2.1 安装扩展
 
-拿到 `vip-sim-0.9.5.vsix` 后，在终端执行：
+拿到 `vip-sim-1.0.1.vsix` 后，在终端执行：
 
 ```bash
-code --install-extension vip-sim-0.9.5.vsix
+code --install-extension vip-sim-1.0.1.vsix
 ```
 
 安装完成后**重新加载 Trae / VS Code 窗口**（`Cmd+Shift+P` → `Developer: Reload Window`）。
@@ -39,10 +39,12 @@ code --install-extension vip-sim-0.9.5.vsix
 
 | 组件        | 安装方式                                                       | 必选/可选 |
 | --------- | ------------------------------------------------------------ | ----- |
-| iverilog   | `brew install icarus-verilog` (macOS) 或 `sudo apt install iverilog` (Linux) | **必选** |
-| python3    | macOS 自带，或 `brew install python@3.10`                      | **必选** |
+| iverilog   | `brew install icarus-verilog` (macOS) 或 `sudo apt install iverilog` (Linux) 或 `scoop install icarus-verilog` (Windows) | **必选** |
+| python3    | macOS 自带，或 `brew install python@3.10`，或 `python.org` 下载安装 (Windows) | **必选** |
 | VaporView  | VS Code 扩展市场搜索 `lramseyer.vaporview` 安装                   | 可选（IDE 内看波形） |
-| GTKWave    | `brew install gtkwave`                                       | 可选（外部看波形） |
+| GTKWave    | `brew install gtkwave` 或 `scoop install gtkwave` (Windows)        | 可选（外部看波形） |
+
+> **说明**：在 Windows 上无需安装 GNU Make，构建编排使用纯 Python 的 `scripts/sim.py`。
 
 ### 2.3 验证环境
 
@@ -57,6 +59,8 @@ echo -n "Pillow: "; python3 -c "import PIL; print(PIL.__version__)" 2>/dev/null 
 echo -n "iverilog: "; iverilog -V 2>/dev/null | head -1 || echo "未安装"
 echo "=== 自检完成 ==="
 ```
+
+**Windows 用户**：可直接在控制台中点击「环境自检」按钮，或运行 `python -c "import cv2,numpy,PIL;print('OK')"` 和 `iverilog -V`。
 
 预期输出：
 
@@ -137,7 +141,7 @@ Python 与 Verilog 之间通过 **hex 文本文件** 桥接：
 
 ### 4.1 统一入口：仿真控制台
 
-**只需记住一个入口** —— `Cmd+Shift+P` → `VIP Sim: 打开仿真控制台`，控制台会根据当前工作区自动切换两种形态：
+**只需记住一个入口** —— `Ctrl+Shift+P` (Windows) / `Cmd+Shift+P` (Mac) → `VIP Sim: 打开仿真控制台`，控制台会根据当前工作区自动切换两种形态：
 
 - **已是仿真项目** → 直接载入控制台，自动识别该项目的 IP / 寄存器 / 输入输出（无需手动导入）。打开一个仿真项目文件夹时，控制台还会**自动弹出**。
 - **不是仿真项目（或未打开文件夹）** → 控制台显示「开始使用」引导页，点击 **➕ 新建仿真项目** 即可在同一界面内创建项目，无需另跑命令。
@@ -602,5 +606,5 @@ A: 检查 RTL 中 `tdata` 的字节排列是否为 `{8'd0, R[7:0], G[7:0], B[7:0
 
 ---
 
-**文档版本**：V1.1.0  
-**最后更新**：2026-06-14
+**文档版本**：V1.2.0  
+**最后更新**：2026-06-24
