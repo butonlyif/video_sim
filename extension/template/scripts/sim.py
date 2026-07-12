@@ -14,7 +14,7 @@ Makefile 已退化为转发到本脚本的薄封装; 扩展与回归脚本也直
   regression view_wave clean all
 
 变量 (KEY=VALUE, 与原 Makefile 同名, 留空则用默认):
-  IP(passthrough) WIDTH(64) HEIGHT(48) FRAMES(1) FORMAT(RGB888)
+  IP(passthrough) WIDTH(64) HEIGHT(48) FRAMES(1) FORMAT(AUTO)
   INPUT_IMG(sim/testdata/test_input.png) INPUT_VIDEO(sim/testdata/test_input.mp4)
   FPS(30) WAVE(0) VIDEO(0)
 """
@@ -34,7 +34,7 @@ PY = sys.executable  # 用当前解释器跑子脚本 (venv 内即 venv python)
 
 DEFAULTS = {
     'IP': 'passthrough',
-    'WIDTH': '64', 'HEIGHT': '48', 'FRAMES': '1', 'FORMAT': 'RGB888',
+    'WIDTH': '64', 'HEIGHT': '48', 'FRAMES': '1', 'FORMAT': 'AUTO',
     'INPUT_IMG': 'sim/testdata/test_input.png',
     'INPUT_VIDEO': 'sim/testdata/test_input.mp4',
     'FPS': '30', 'WAVE': '0', 'VIDEO': '0',
@@ -98,13 +98,18 @@ def out_dims():
 
 
 def in_fmt():
-    """IP 输入格式: 优先 ip.json 的 in_format, 否则用 FORMAT 变量 (默认 RGB888)。"""
-    return ip_manifest.in_format(V['IP'], V['FORMAT'])
+    """IP 输入格式。FORMAT 显式指定 (≠AUTO) 时覆盖一切 (控制台手动选);
+    否则 AUTO: 优先 ip.json 的 in_format (导入工程自动识别), 都没有则 RGB888。"""
+    if V['FORMAT'] and V['FORMAT'] != 'AUTO':
+        return V['FORMAT']
+    return ip_manifest.in_format(V['IP'], 'RGB888')
 
 
 def out_fmt():
-    """IP 输出格式: 优先 ip.json 的 out_format, 否则用 FORMAT 变量。"""
-    return ip_manifest.out_format(V['IP'], V['FORMAT'])
+    """IP 输出格式。语义同 in_fmt: FORMAT 显式时覆盖, 否则 AUTO 走 ip.json/RGB888。"""
+    if V['FORMAT'] and V['FORMAT'] != 'AUTO':
+        return V['FORMAT']
+    return ip_manifest.out_format(V['IP'], 'RGB888')
 
 
 # === 目标 ===

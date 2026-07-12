@@ -58,6 +58,7 @@ function getState() {
         width: s.get('width', 64),
         height: s.get('height', 48),
         frames: s.get('frames', 1),
+        format: s.get('format', 'AUTO'),
         inputImage: s.get('inputImage', 'sim/testdata/test_input.png'),
     };
 }
@@ -264,8 +265,8 @@ async function cmdImportProject() {
 
 async function doRun(params) {
     const root = wsRoot();
-    const { ip, width, height, frames, inputImage } = params;
-    await setState({ ip, width, height, frames, inputImage });
+    const { ip, width, height, frames, format, inputImage } = params;
+    await setState({ ip, width, height, frames, format, inputImage });
     await extCtx.workspaceState.update(`regs:${ip}`, params.regs || {});
     writeRegcfg(root, readRegdef(root, ip), params.regs, width, height);
     out.show(true);
@@ -279,7 +280,7 @@ async function doRun(params) {
         ? `${py} scripts/sim.py video IP=${ip} WIDTH=${width} HEIGHT=${height} ` +
           `FRAMES=${frames} INPUT_VIDEO="${inputImage}"`
         : `${py} scripts/sim.py all IP=${ip} WIDTH=${width} HEIGHT=${height} ` +
-          `FRAMES=${frames} INPUT_IMG="${inputImage}"`;
+          `FRAMES=${frames} FORMAT=${format || 'AUTO'} INPUT_IMG="${inputImage}"`;
     const code = await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
         title: `VIP Sim: ${video ? '视频' : ''}仿真 ${ip}`,
@@ -364,13 +365,19 @@ async function cmdViewWave() {
     const vcd = path.join(root, 'output', 'waves', `${st.ip}.vcd`);
 
     if (!fs.existsSync(vcd)) {
+        // 视频输入须走 video_sim (流式逐帧 + gen_video_stimulus), 不能用图像 sim
+        // 把 mp4 当图像喂给 gen_stimulus 会失败 → 无 VCD → "波形生成失败"
+        const py = pyExec(root);
+        const cmd = isVideoPath(st.inputImage)
+            ? `${py} scripts/sim.py video_sim WAVE=1 IP=${st.ip} WIDTH=${st.width} ` +
+              `HEIGHT=${st.height} FRAMES=${st.frames} INPUT_VIDEO="${st.inputImage}"`
+            : `${py} scripts/sim.py sim WAVE=1 IP=${st.ip} WIDTH=${st.width} ` +
+              `HEIGHT=${st.height} FRAMES=${st.frames} FORMAT=${st.format || 'AUTO'} ` +
+              `INPUT_IMG="${st.inputImage}"`;
         const code = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: `重跑仿真生成波形 (${st.ip})...`,
-        }, () => run(
-            `${pyExec(root)} scripts/sim.py sim WAVE=1 IP=${st.ip} WIDTH=${st.width} ` +
-            `HEIGHT=${st.height} FRAMES=${st.frames} ` +
-            `INPUT_IMG="${st.inputImage}"`, root));
+        }, () => run(cmd, root));
         if (code !== 0 || !fs.existsSync(vcd)) {
             vscode.window.showErrorMessage('波形生成失败');
             return;
@@ -726,8 +733,8 @@ function cmdConsole() {
     consolePanel.onDidDispose(() => { consolePanel = undefined; });
     const persistParams = async (p) => {
         if (!p) return;
-        const { ip, width, height, frames, inputImage, regs } = p;
-        await setState({ ip, width, height, frames, inputImage });
+        const { ip, width, height, frames, format, inputImage, regs } = p;
+        await setState({ ip, width, height, frames, format, inputImage });
         if (regs) await extCtx.workspaceState.update(`regs:${ip}`, regs);
     };
     consolePanel.webview.onDidReceiveMessage(async (m) => {
@@ -1053,6 +1060,20 @@ body{padding:18px 22px;max-width:1080px;margin:0 auto}
       <div class="param-item"><label>宽</label><input id="width" type="number" placeholder="640"></div>
       <div class="param-item"><label>高</label><input id="height" type="number" placeholder="480"></div>
       <div class="param-item"><label>帧数</label><input id="frames" type="number" placeholder="1"></div>
+      <div class="param-item"><label>激励格式</label><select id="format">
+        <option value="AUTO">自动 (按 IP)</option>
+        <option value="RGB888">RGB888 (4:4:4)</option>
+        <option value="RGB24">RGB24 (4:4:4)</option>
+        <option value="YUV444">YUV 4:4:4</option>
+        <option value="YUV422">YUV 4:2:2</option>
+        <option value="YUV420">YUV 4:2:0</option>
+        <option value="RAW8">RAW8 (灰度)</option>
+        <option value="RAW16">RAW16</option>
+        <option value="BAYER_RGGB">RAW Bayer RGGB</option>
+        <option value="BAYER_GRBG">RAW Bayer GRBG</option>
+        <option value="BAYER_BGGR">RAW Bayer BGGR</option>
+        <option value="BAYER_GBRG">RAW Bayer GBRG</option>
+      </select></div>
     </div>
   </div>
 </div>
@@ -1177,6 +1198,7 @@ function params() {
     width: +document.getElementById('width').value,
     height: +document.getElementById('height').value,
     frames: +document.getElementById('frames').value,
+    format: document.getElementById('format').value,
     inputImage: S.inputImage,
     frame: curFrame,
     regs: collectRegs() };
@@ -1241,7 +1263,7 @@ document.getElementById('ip').onchange = () => {
   delete p.regs;          // 切换瞬间的输入框还属于旧 IP, 不写入新 IP
   vscode.postMessage({ cmd: 'saveState', params: p, refresh: true });
 };
-for (const id of ['width', 'height', 'frames']) {
+for (const id of ['width', 'height', 'frames', 'format']) {
   document.getElementById(id).onchange =
     () => vscode.postMessage({ cmd: 'saveState', params: params() });
 }
@@ -1302,6 +1324,7 @@ window.addEventListener('message', (e) => {
     document.getElementById('width').value = S.width;
     document.getElementById('height').value = S.height;
     document.getElementById('frames').value = S.frames;
+    document.getElementById('format').value = S.format || 'AUTO';
     renderRegs();
     const isVid = /\.(mp4|avi|mov|mkv)$/i.test(S.inputImage || '');
     const inLabel = document.getElementById('inName');
